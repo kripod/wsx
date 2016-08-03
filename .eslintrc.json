@@ -1,0 +1,15 @@
+{
+  "parser": "babel-eslint",
+  "extends": "airbnb-base",
+  "rules": {
+    "import/no-extraneous-dependencies": 0,
+    "max-len": [2, 80],
+    "valid-jsdoc": [2, {
+      "prefer": {
+        "return": "returns"
+      },
+      "requireReturn": false,
+      "requireReturnDescription": false
+    }]
+  }
+}

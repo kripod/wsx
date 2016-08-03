@@ -1,0 +1,71 @@
+{
+  "name": "wsx",
+  "version": "1.0.0",
+  "description": "WebSockets with extensions.",
+  "author": "Kristóf Poduszló <kripod@protonmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "websocket",
+    "socket",
+    "framework"
+  ],
+  "main": "./lib/server/index.js",
+  "browser": "./lib/client/index.js",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "directories": {
+    "lib": "./lib"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production babel ./src -d ./lib -s",
+    "watch": "npm run build -- -w",
+    "prepublish": "npm run build",
+    "test": "cross-env NODE_ENV=test nyc -r lcov -r text ava -T 10s -v && eslint ./src ./test.js ./examples && documentation lint ./src/client ./src/server",
+    "doc": "documentation readme ./src/client ./src/server -s \"API Reference\""
+  },
+  "dependencies": {
+    "babel-runtime": "^6.11.6",
+    "uws": "^0.7.9",
+    "websocket": "^1.0.23",
+    "ws": "^1.1.1"
+  },
+  "devDependencies": {
+    "ava": "^0.15.2",
+    "babel-cli": "^6.11.4",
+    "babel-eslint": "^6.1.2",
+    "babel-plugin-istanbul": "^1.0.3",
+    "babel-plugin-transform-class-properties": "^6.11.5",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-plugin-transform-runtime": "^6.12.0",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-es2016": "^6.11.3",
+    "babel-preset-stage-2": "^6.11.0",
+    "babel-register": "^6.11.6",
+    "cross-env": "^2.0.0",
+    "documentation": "^4.0.0-beta9",
+    "eslint": "^3.2.2",
+    "eslint-config-airbnb-base": "^5.0.1",
+    "eslint-plugin-import": "^1.12.0",
+    "nyc": "^7.1.0",
+    "portfinder": "^1.0.5"
+  },
+  "ava": {
+    "babel": "inherit"
+  },
+  "nyc": {
+    "require": [
+      "babel-register"
+    ],
+    "sourceMap": false,
+    "instrument": false
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kripod/wsx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kripod/wsx/issues"
+  }
+}
