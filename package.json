@@ -1,6 +1,6 @@
 {
   "name": "wsx",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "WebSockets with extensions.",
   "author": "Kristóf Poduszló <kripod@protonmail.com>",
   "license": "MIT",
@@ -9,6 +9,9 @@
     "socket",
     "framework"
   ],
+  "engines": {
+    "node": ">=4"
+  },
   "main": "./lib/server/index.js",
   "browser": "./lib/client/index.js",
   "files": [
