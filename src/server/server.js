@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import { Server as WebSocketServer } from 'uws';
 import ClientGroup from './client-group';
-import { broadcast, send } from '../client-extensions';
+import { extendServerSocket } from '../socket-extensions';
 import { handleMessage } from '../utils';
 
 /**
@@ -50,8 +50,9 @@ export default class Server extends EventEmitter {
    */
 
   /**
-   * Direct reference to the underlying WebSocket server implementation.
+   * Direct reference to the underlying extended WebSocket instance.
    * @type {uws.Server}
+   * @private
    */
   base;
 
@@ -81,6 +82,9 @@ export default class Server extends EventEmitter {
     this.base = new WebSocketServer(options, successCallback);
 
     this.base.on('connection', (client) => {
+      // Extend the functionality of clients
+      extendServerSocket(client, this);
+
       // Add the connected client to the main group of clients
       this.clients.add(client);
 
@@ -97,17 +101,10 @@ export default class Server extends EventEmitter {
       client.on('message', (data) => handleMessage(this, data, client));
       client.on('error', (error) => this.emit('error', error, client));
 
-      // Extend the functionality of clients
-      const superSend = client.send;
-      Object.assign(client, {
-        send: (...params) => send(client, superSend, ...params),
-        broadcast: (...params) => broadcast(this.clients, client, ...params),
-      });
-
       this.emit('connect', client);
     });
 
-    this.on('error', (error) => this.emit('error', error));
+    this.base.on('error', (error) => this.emit('error', error));
 
     // Parse custom options
     const { plugins = [] } = options;

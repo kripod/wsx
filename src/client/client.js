@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import { w3cwebsocket as WebSocketClient } from 'websocket';
-import { send } from '../client-extensions';
+import { extendClientSocket } from '../socket-extensions';
 import { handleMessage } from '../utils';
 
 /**
@@ -45,8 +45,9 @@ export default class Client extends EventEmitter {
    */
 
   /**
-   * Direct reference to the underlying WebSocket client implementation.
+   * Direct reference to the underlying extended WebSocket instance.
    * @type {websocket.w3cwebsocket}
+   * @private
    */
   base;
 
@@ -59,7 +60,7 @@ export default class Client extends EventEmitter {
    */
   constructor(url, options = {}) {
     super();
-    this.base = new WebSocketClient(url, options.protocols);
+    this.base = extendClientSocket(new WebSocketClient(url, options.protocols));
 
     this.base.onopen = () => this.emit('connect');
     this.base.onclose = ({ code, reason, wasClean }) =>
@@ -82,7 +83,7 @@ export default class Client extends EventEmitter {
    * @param {...*} [params] Data to be sent.
    */
   send(...params) {
-    send(this.base, this.base.send, ...params);
+    this.base.send(...params);
   }
 
   /**

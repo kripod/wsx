@@ -124,10 +124,6 @@ wsxClient.on('error', () => {
 
 WebSocket client with extensions.
 
-#### base
-
-Direct reference to the underlying WebSocket client implementation.
-
 #### constructor
 
 **Parameters**
@@ -158,9 +154,25 @@ Closes the connection or connection attempt, if any.
     connection is closing. This string must be no longer than 123 bytes of
     UTF-8 text (not characters).
 
-#### connect
+#### error
 
-Connection event, fired when the client has connected successfully.
+Error event, fired when an unexpected error occurs.
+
+#### message:\[type]
+
+Typeful message event, fired when a typeful message is received.
+
+**Parameters**
+
+-   `payload` **Any** Payload of the message.
+
+#### message
+
+Generic message event, fired when any message is received.
+
+**Parameters**
+
+-   `data` **Any** Full message data.
 
 #### disconnect
 
@@ -173,25 +185,61 @@ Disconnection event, fired when the client disconnects.
 -   `wasClean` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Indicates whether or not the connection was
     cleanly closed.
 
-#### message
+#### connect
 
-Generic message event, fired when any message is received.
+Connection event, fired when the client has connected successfully.
+
+### SocketExtensions
+
+Provides extensions for sockets.
+
+**Parameters**
+
+-   `socket`  
+
+#### shared#send
+
+Transmits data through the socket.
+
+**Parameters**
+
+-   `params` **\[...Any]** Data to be sent.
+
+#### server#broadcast
+
+Transmits data to everyone else except for the socket that starts it.
+
+**Parameters**
+
+-   `params` **\[...Any]** Data to be sent.
+
+### MessageSerializer
+
+Serializes and deserializes messages transmitted over a WebSocket connection.
+
+**Parameters**
+
+-   `data`  
+
+#### serializeMessage
+
+Serializes a message to be sent over a WebSocket connection.
 
 **Parameters**
 
 -   `data` **Any** Full message data.
 
-#### message:\[type]
+Returns **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Buffer](https://nodejs.org/api/buffer.html) \| [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer))** 
 
-Typeful message event, fired when a typeful message is received.
+#### deserializeMessage
+
+Deserializes a message received over a WebSocket connection.
 
 **Parameters**
 
--   `payload` **Any** Payload of the message.
+-   `data` **Any** Full message data.
 
-#### error
-
-Error event, fired when an unexpected error occurs.
+Returns **Any** 
 
 ### ClientGroup
 
@@ -228,10 +276,6 @@ Transmits data to every client in the group.
 
 WebSocket server with extensions.
 
-#### base
-
-Direct reference to the underlying WebSocket server implementation.
-
 #### clients
 
 Store for every connected client.
@@ -257,14 +301,6 @@ Retrieves a client group by its ID. Creates a new group if necessary.
 
 Returns **Group** 
 
-#### connect
-
-Connection event, fired when a client has connected successfully.
-
-**Parameters**
-
--   `client` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Connected client instance.
-
 #### disconnect
 
 Disconnection event, fired when a client disconnects.
@@ -274,6 +310,23 @@ Disconnection event, fired when a client disconnects.
 -   `client` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Disconnected client instance.
 -   `code` **[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Close status code sent by the client.
 -   `reason` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Reason why the client closed the connection.
+
+#### message
+
+Generic message event, fired when any message is received.
+
+**Parameters**
+
+-   `client` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Sender of the message.
+-   `data` **Any** Full message data.
+
+#### connect
+
+Connection event, fired when a client has connected successfully.
+
+**Parameters**
+
+-   `client` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Connected client instance.
 
 #### error
 
@@ -292,71 +345,3 @@ Typeful message event, fired when a typeful message is received.
 
 -   `client` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Sender of the message.
 -   `payload` **Any** Payload of the message.
-
-#### message
-
-Generic message event, fired when any message is received.
-
-**Parameters**
-
--   `client` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Sender of the message.
--   `data` **Any** Full message data.
-
-### ClientExtensions
-
-Provides method extensions for WebSocket clients.
-
-**Parameters**
-
--   `client`  
--   `superSend`  
--   `params` **...Any** 
-
-#### send
-
-Transmits data to the client.
-
-**Parameters**
-
--   `client` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Client instance of the receiver.
--   `superSend` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** Super `send` function of the client.
--   `params` **\[...Any]** Data to be sent.
-
-#### broadcast
-
-Transmits data to everyone else except for the client that starts it.
-
-**Parameters**
-
--   `clients` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)>** Client instances to broadcast data
-    between.
--   `senderClient` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Client instance of the sender.
--   `params` **\[...Any]** Data to be sent.
-
-### MessageSerializer
-
-Serializes and deserializes messages transmitted over a WebSocket connection.
-
-**Parameters**
-
--   `data`  
-
-#### serializeMessage
-
-Serializes a message to be sent over a WebSocket connection.
-
-**Parameters**
-
--   `data` **Any** Full message data.
-
-Returns **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Buffer](https://nodejs.org/api/buffer.html) \| [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer))** 
-
-#### deserializeMessage
-
-Deserializes a message received over a WebSocket connection.
-
-**Parameters**
-
--   `data` **Any** Full message data.
-
-Returns **Any** 
