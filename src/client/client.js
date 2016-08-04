@@ -25,14 +25,7 @@ export default class Client extends EventEmitter {
    */
 
   /**
-   * Generic message event, fired when any message is received.
-   * @event message
-   * @memberof Client
-   * @param {*} data Full message data.
-   */
-
-  /**
-   * Typeful message event, fired when a typeful message is received.
+   * Message event, fired when a typeful message is received.
    * @event message:[type]
    * @memberof Client
    * @param {*} payload Payload of the message.
@@ -49,7 +42,7 @@ export default class Client extends EventEmitter {
    * @type {websocket.w3cwebsocket}
    * @private
    */
-  base;
+  socket;
 
   /**
    * Message serializer instance.
@@ -69,16 +62,16 @@ export default class Client extends EventEmitter {
 
     this.messageSerializer = MessageSerializer;
 
-    this.base = extendClientSideSocket(
+    this.socket = extendClientSideSocket(
       new WebSocketClient(url, options.protocols),
       this
     );
 
-    this.base.onopen = () => this.emit('connect');
-    this.base.onclose = ({ code, reason, wasClean }) =>
+    this.socket.onopen = () => this.emit('connect');
+    this.socket.onclose = ({ code, reason, wasClean }) =>
       this.emit('disconnect', code, reason, wasClean);
 
-    this.base.onmessage = ({ data }) => {
+    this.socket.onmessage = ({ data }) => {
       const { type, payload } = this.messageSerializer.deserialize(data);
 
       // Validate message type
@@ -87,7 +80,7 @@ export default class Client extends EventEmitter {
       }
     };
 
-    this.base.onerror = () => this.emit('error');
+    this.socket.onerror = () => this.emit('error');
 
     // Parse custom options
     const { plugins = [] } = options;
@@ -104,7 +97,7 @@ export default class Client extends EventEmitter {
    * @param {*} [payload] Payload of the message.
    */
   send(type, payload) {
-    this.base.send(type, payload);
+    this.socket.send(type, payload);
   }
 
   /**
@@ -116,6 +109,6 @@ export default class Client extends EventEmitter {
    * UTF-8 text (not characters).
    */
   disconnect(code, reason) {
-    this.base.close(code, reason);
+    this.socket.close(code, reason);
   }
 }

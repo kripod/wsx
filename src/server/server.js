@@ -26,15 +26,7 @@ export default class Server extends EventEmitter {
    */
 
   /**
-   * Generic message event, fired when any message is received.
-   * @event message
-   * @memberof Server
-   * @param {ServerSideSocket} client Socket of the message's sender.
-   * @param {*} data Full message data.
-   */
-
-  /**
-   * Typeful message event, fired when a typeful message is received.
+   * Message event, fired when a typeful message is received.
    * @event message:[type]
    * @memberof Server
    * @param {ServerSideSocket} client Socket of the message's sender.
@@ -55,7 +47,7 @@ export default class Server extends EventEmitter {
    * @type {uws.Server}
    * @private
    */
-  base;
+  socket;
 
   /**
    * Message serializer instance.
@@ -89,9 +81,9 @@ export default class Server extends EventEmitter {
 
     this.messageSerializer = MessageSerializer;
 
-    this.base = new WebSocketServer(options, successCallback);
+    this.socket = new WebSocketServer(options, successCallback);
 
-    this.base.on('connection', (client) => {
+    this.socket.on('connection', (client) => {
       // Extend the functionality of clients
       extendServerSideSocket(client, this);
 
@@ -122,7 +114,7 @@ export default class Server extends EventEmitter {
       this.emit('connect', client);
     });
 
-    this.base.on('error', (error) => this.emit('error', error));
+    this.socket.on('error', (error) => this.emit('error', error));
 
     // Parse custom options
     const { plugins = [] } = options;
