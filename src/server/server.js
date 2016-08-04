@@ -87,7 +87,7 @@ export default class Server extends EventEmitter {
   constructor(options, successCallback) {
     super();
 
-    this.messageSerializer = new MessageSerializer(this);
+    this.messageSerializer = MessageSerializer;
 
     this.base = new WebSocketServer(options, successCallback);
 
@@ -116,6 +116,7 @@ export default class Server extends EventEmitter {
           this.emit(`message:${type}`, client, payload);
         }
       });
+
       client.on('error', (error) => this.emit('error', error, client));
 
       this.emit('connect', client);

@@ -67,7 +67,7 @@ export default class Client extends EventEmitter {
   constructor(url, options = {}) {
     super();
 
-    this.messageSerializer = new MessageSerializer(this);
+    this.messageSerializer = MessageSerializer;
 
     this.base = extendClientSideSocket(
       new WebSocketClient(url, options.protocols),
@@ -86,6 +86,7 @@ export default class Client extends EventEmitter {
         this.emit(`message:${type}`, payload);
       }
     };
+
     this.base.onerror = () => this.emit('error');
 
     // Parse custom options
