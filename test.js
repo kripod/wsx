@@ -149,7 +149,7 @@ test.serial.cb('disconnect', (t) => {
       t.is(server.sockets.size, connectedClientCount);
 
       if (connectedClientCount === 0) {
-        // Ensure that there are no empty client groups left
+        // Ensure that there are no empty socket groups left
         t.deepEqual(server.socketGroups, {});
         t.end();
       }

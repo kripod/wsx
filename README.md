@@ -114,6 +114,29 @@ wsxClient.on('error', () => {
 });
 ```
 
+### Plugins
+
+Plugins can be used to extend the capability of WSX.
+
+```js
+const wsxServerWithPlugins = new Server({
+  port: 3001,
+  plugins: [
+    (wsxServer) => {
+      // Modify the server instance
+    },
+  ],
+});
+
+const wsxClientWithPlugins = new Client('ws://localhost:3001', {
+  plugins: [
+    (wsxClient) => {
+      // Modify the client instance
+    },
+  ],
+});
+```
+
 <a href="#api-reference"></a>
 
 ## API Reference
