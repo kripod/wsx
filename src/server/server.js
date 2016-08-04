@@ -1,8 +1,8 @@
 import EventEmitter from 'events';
 import { Server as WebSocketServer } from 'uws';
 import ClientGroup from './client-group';
+import MessageSerializer from '../message-serializer';
 import { extendServerSideSocket } from '../socket-extensions';
-import { handleMessage } from '../utils';
 
 /**
  * WebSocket server with extensions.
@@ -58,6 +58,12 @@ export default class Server extends EventEmitter {
   base;
 
   /**
+   * Message serializer instance.
+   * @type {MessageSerializer}
+   */
+  messageSerializer;
+
+  /**
    * Store for every connected client.
    * @type {ClientGroup}
    */
@@ -80,6 +86,9 @@ export default class Server extends EventEmitter {
    */
   constructor(options, successCallback) {
     super();
+
+    this.messageSerializer = new MessageSerializer(this);
+
     this.base = new WebSocketServer(options, successCallback);
 
     this.base.on('connection', (client) => {
@@ -99,7 +108,9 @@ export default class Server extends EventEmitter {
         this.emit('disconnect', client, code, reason);
       });
 
-      client.on('message', (data) => handleMessage(this, data, client));
+      client.on('message', (data) =>
+        this.messageSerializer.deserialize(data, client)
+      );
       client.on('error', (error) => this.emit('error', error, client));
 
       this.emit('connect', client);

@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import { w3cwebsocket as WebSocketClient } from 'websocket';
+import MessageSerializer from '../message-serializer';
 import { extendClientSideSocket } from '../socket-extensions';
-import { handleMessage } from '../utils';
 
 /**
  * WebSocket client with extensions.
@@ -52,6 +52,12 @@ export default class Client extends EventEmitter {
   base;
 
   /**
+   * Message serializer instance.
+   * @type {MessageSerializer}
+   */
+  messageSerializer;
+
+  /**
    * @param {string} url URL of the WebSocket server to which to connect.
    * @param {Object} [options] Options to construct the client with.
    * @param {string[]} [options.protocols] Protocols to be used if possible.
@@ -60,15 +66,20 @@ export default class Client extends EventEmitter {
    */
   constructor(url, options = {}) {
     super();
+
+    this.messageSerializer = new MessageSerializer(this);
+
     this.base = extendClientSideSocket(
-      new WebSocketClient(url, options.protocols)
+      new WebSocketClient(url, options.protocols),
+      this
     );
 
     this.base.onopen = () => this.emit('connect');
     this.base.onclose = ({ code, reason, wasClean }) =>
       this.emit('disconnect', code, reason, wasClean);
 
-    this.base.onmessage = ({ data }) => handleMessage(this, data);
+    this.base.onmessage = ({ data }) =>
+      this.messageSerializer.deserialize(data);
     this.base.onerror = () => this.emit('error');
 
     // Parse custom options

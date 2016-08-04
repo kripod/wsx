@@ -1,30 +1,20 @@
-import { serializeMessage } from './message-serializer';
-
 /**
  * Provides extensions for sockets.
  * @namespace SocketExtensions
  */
 
-function getSharedSocketExtensions(socket) {
+function getSharedSocketExtensions(socket, messageSerializer) {
   const sendRaw = socket.send.bind(socket);
 
   return {
     /**
-     * Transmits data through the socket.
+     * Transmits a message through the socket.
      * @name Socket#send
      * @memberof SocketExtensions
-     * @param {...*} [params] Data to be sent.
+     * @param {...*} [params] Parameters of the message to be sent.
      */
     send: (...params) => {
-      const [type, payload] = params;
-
-      sendRaw(serializeMessage(
-        // Transform typeful messages to JSON
-        type && type.constructor === String ? {
-          type,
-          ...(payload && { payload }),
-        } : params[0]
-      ));
+      sendRaw(messageSerializer.serialize(...params));
     },
   };
 }
@@ -33,13 +23,14 @@ function getSharedSocketExtensions(socket) {
  * Applies extensions on a client socket.
  * @memberof SocketExtensions
  * @param {ClientSideSocket} socket Socket to apply extensions on.
+ * @param {Client} client Client instance which the socket is owned by.
  * @returns {ClientSideSocket} Modified socket.
  * @private
  */
-export function extendClientSideSocket(socket) {
+export function extendClientSideSocket(socket, client) {
   return Object.assign(
     socket,
-    getSharedSocketExtensions(socket)
+    getSharedSocketExtensions(socket, client.messageSerializer)
   );
 }
 
@@ -54,15 +45,16 @@ export function extendClientSideSocket(socket) {
 export function extendServerSideSocket(socket, server) {
   const serverSideSocketExtensions = {
     /**
-     * Transmits data to everyone else except for the socket that starts it.
+     * Transmits a message to everyone else except for the socket that starts
+     * it.
      * @name ServerSideSocket#broadcast
      * @memberof SocketExtensions
-     * @param {...*} [params] Data to be sent.
+     * @param {...*} [params] Parameters of the message to be sent.
      */
     broadcast: (...params) => {
-      for (const socket2 of server.clients) {
-        if (socket2 !== this) {
-          socket2.send(...params);
+      for (const client of server.clients) {
+        if (client !== this) {
+          client.send(...params);
         }
       }
     },
@@ -70,7 +62,7 @@ export function extendServerSideSocket(socket, server) {
 
   return Object.assign(
     socket,
-    getSharedSocketExtensions(socket),
+    getSharedSocketExtensions(socket, server.messageSerializer),
     serverSideSocketExtensions
   );
 }
