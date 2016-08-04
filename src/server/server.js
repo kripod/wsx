@@ -108,9 +108,14 @@ export default class Server extends EventEmitter {
         this.emit('disconnect', client, code, reason);
       });
 
-      client.on('message', (data) =>
-        this.messageSerializer.deserialize(data, client)
-      );
+      client.on('message', (data) => {
+        const { type, payload } = this.messageSerializer.deserialize(data);
+
+        // Validate message type
+        if (type && type.constructor === String) {
+          this.emit(`message:${type}`, client, payload);
+        }
+      });
       client.on('error', (error) => this.emit('error', error, client));
 
       this.emit('connect', client);

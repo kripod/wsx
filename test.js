@@ -52,59 +52,23 @@ test.serial('plugins', (t) => {
   }
 });
 
-test.serial.cb('send/receive typeless data', (t) => {
-  const expectedData = new ArrayBuffer(8);
-  const eventsOrder = [];
-
-  server.once('message', (client, data) => {
-    t.deepEqual(data.byteLength, expectedData.byteLength);
-    client.send(data);
-    eventsOrder.push(1);
-  });
-
-  clients[0].once('message', (data) => {
-    t.deepEqual(data.byteLength, expectedData.byteLength);
-    eventsOrder.push(2);
-
-    // Check whether the order of event execution was correct
-    t.deepEqual(eventsOrder, [1, 2]);
-    t.end();
-  });
-
-  clients[0].send(expectedData);
-});
-
-test.serial.cb('send/receive typeful data', (t) => {
+test.serial.cb('send/receive data', (t) => {
   const expectedType = 'echo';
   const expectedPayload = { text: 'Hello, World!' };
-  const expectedData = {
-    type: expectedType,
-    payload: expectedPayload,
-  };
   const eventsOrder = [];
-
-  server.once('message', (client, data) => {
-    t.deepEqual(data, expectedData);
-    eventsOrder.push(1);
-  });
 
   server.once(`message:${expectedType}`, (client, payload) => {
     t.deepEqual(payload, expectedPayload);
     client.send(expectedType, expectedPayload);
-    eventsOrder.push(2);
-  });
-
-  clients[0].once('message', (data) => {
-    t.deepEqual(data, expectedData);
-    eventsOrder.push(3);
+    eventsOrder.push(1);
   });
 
   clients[0].once(`message:${expectedType}`, (payload) => {
     t.deepEqual(payload, expectedPayload);
-    eventsOrder.push(4);
+    eventsOrder.push(2);
 
     // Check whether the order of event execution was correct
-    t.deepEqual(eventsOrder, [1, 2, 3, 4]);
+    t.deepEqual(eventsOrder, [1, 2]);
     t.end();
   });
 
@@ -114,10 +78,6 @@ test.serial.cb('send/receive typeful data', (t) => {
 test.serial.cb('broadcast data', (t) => {
   const expectedType = 'position';
   const expectedPayload = { x: 10, y: 20 };
-  const expectedData = {
-    type: expectedType,
-    payload: expectedPayload,
-  };
 
   server.once(`message:${expectedType}`, (client, payload) => {
     client.broadcast(expectedType, payload);
@@ -137,7 +97,7 @@ test.serial.cb('broadcast data', (t) => {
     });
   }
 
-  clients[0].send(expectedData);
+  clients[0].send(expectedType, expectedPayload);
 });
 
 test.serial.cb('client groups', (t) => {

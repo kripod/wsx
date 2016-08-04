@@ -78,8 +78,14 @@ export default class Client extends EventEmitter {
     this.base.onclose = ({ code, reason, wasClean }) =>
       this.emit('disconnect', code, reason, wasClean);
 
-    this.base.onmessage = ({ data }) =>
-      this.messageSerializer.deserialize(data);
+    this.base.onmessage = ({ data }) => {
+      const { type, payload } = this.messageSerializer.deserialize(data);
+
+      // Validate message type
+      if (type && type.constructor === String) {
+        this.emit(`message:${type}`, payload);
+      }
+    };
     this.base.onerror = () => this.emit('error');
 
     // Parse custom options
@@ -92,11 +98,12 @@ export default class Client extends EventEmitter {
   }
 
   /**
-   * Transmits data to the server.
-   * @param {...*} [params] Data to be sent.
+   * Transmits a message to the server.
+   * @param {string} type Type of the message.
+   * @param {*} [payload] Payload of the message.
    */
-  send(...params) {
-    this.base.send(...params);
+  send(type, payload) {
+    this.base.send(type, payload);
   }
 
   /**

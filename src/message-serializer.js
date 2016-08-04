@@ -19,22 +19,16 @@ export default class MessageSerializer {
 
   /**
    * Serializes a message to be sent over a WebSocket connection.
-   * @param {...*} [params] Parameters of the message to be constructed.
+   * @param {string} type Type of the message.
+   * @param {*} [payload] Payload of the message.
    * @returns {string|Buffer|ArrayBuffer}
    */
-  serialize(...params) {
-    const [type, payload] = params;
-
-    // Transform typeful messages to JSON
-    const data = type && type.constructor === String ? {
+  serialize(type, payload) {
+    // Transform messages to JSON strings
+    return JSON.stringify({
       type,
       ...(payload && { payload }),
-    } : type;
-
-    // Transform non-buffer data to string
-    return data instanceof Buffer || data instanceof ArrayBuffer ?
-      data :
-      JSON.stringify(data);
+    });
   }
 
   /**
@@ -43,29 +37,10 @@ export default class MessageSerializer {
    * @param {ServerSocket} [client] Socket of the message's sender.
    * @returns {*}
    */
-  deserialize(serializedData, client) {
+  deserialize(serializedData) {
     // Parse JSON-serialized strings
-    const data = serializedData && serializedData.constructor === String ?
+    return serializedData && serializedData.constructor === String ?
       JSON.parse(serializedData) :
       serializedData;
-
-    // Emit a generic message event
-    this.parent.emit('message', ...(
-      client ?
-        [client, data] :
-        [data]
-    ));
-
-    // Emit a special event for typeful messages
-    const { type, payload } = data;
-    if (type && type.constructor === String) {
-      this.parent.emit(`message:${type}`, ...(
-        client ?
-          [client, payload] :
-          [payload]
-      ));
-    }
-
-    return data;
   }
 }

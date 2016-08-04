@@ -49,12 +49,13 @@ export function extendServerSideSocket(socket, server) {
      * it.
      * @name ServerSideSocket#broadcast
      * @memberof SocketExtensions
-     * @param {...*} [params] Parameters of the message to be sent.
+     * @param {string} type Type of the message.
+     * @param {*} [payload] Payload of the message.
      */
-    broadcast: (...params) => {
+    broadcast: (type, payload) => {
       for (const client of server.clients) {
         if (client !== this) {
-          client.send(...params);
+          client.send(type, payload);
         }
       }
     },

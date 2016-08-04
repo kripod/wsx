@@ -52,12 +52,13 @@ export default class ClientGroup extends Set {
   }
 
   /**
-   * Transmits data to every client in the group.
-   * @param {...*} [params] Data to be sent.
+   * Transmits a message to every client in the group.
+   * @param {string} type Type of the message.
+   * @param {*} [payload] Payload of the message.
    */
-  send(...params) {
+  send(type, payload) {
     for (const client of this) {
-      client.send(...params);
+      client.send(type, payload);
     }
   }
 }
