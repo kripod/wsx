@@ -13,7 +13,7 @@ import { deserializeMessage } from './message-serializer';
  * @memberof Utils
  * @param {EventEmitter} eventEmitter EventEmitter to forward the message to.
  * @param {*} serializedData Full, serialized message data.
- * @param {Object} client Sender of the message.
+ * @param {Socket} client Socket of the message's sender.
  */
 export function handleMessage(eventEmitter, serializedData, client) {
   const data = deserializeMessage(serializedData);

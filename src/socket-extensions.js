@@ -11,7 +11,7 @@ function getSharedSocketExtensions(socket) {
   return {
     /**
      * Transmits data through the socket.
-     * @name shared#send
+     * @name Socket#send
      * @memberof SocketExtensions
      * @param {...*} [params] Data to be sent.
      */
@@ -32,11 +32,11 @@ function getSharedSocketExtensions(socket) {
 /**
  * Applies extensions on a client socket.
  * @memberof SocketExtensions
- * @param {Object} socket Socket to apply extensions on.
- * @returns {Object} Modified socket.
+ * @param {ClientSideSocket} socket Socket to apply extensions on.
+ * @returns {ClientSideSocket} Modified socket.
  * @private
  */
-export function extendClientSocket(socket) {
+export function extendClientSideSocket(socket) {
   return Object.assign(
     socket,
     getSharedSocketExtensions(socket)
@@ -46,16 +46,16 @@ export function extendClientSocket(socket) {
 /**
  * Applies extensions on a server socket.
  * @memberof SocketExtensions
- * @param {Object} socket Socket to apply extensions on.
+ * @param {ServerSideSocket} socket Socket to apply extensions on.
  * @param {Server} server Server instance which the socket is owned by.
- * @returns {Object} Modified socket.
+ * @returns {ServerSideSocket} Modified socket.
  * @private
  */
-export function extendServerSocket(socket, server) {
-  const serverSocketExtensions = {
+export function extendServerSideSocket(socket, server) {
+  const serverSideSocketExtensions = {
     /**
      * Transmits data to everyone else except for the socket that starts it.
-     * @name server#broadcast
+     * @name ServerSideSocket#broadcast
      * @memberof SocketExtensions
      * @param {...*} [params] Data to be sent.
      */
@@ -71,6 +71,6 @@ export function extendServerSocket(socket, server) {
   return Object.assign(
     socket,
     getSharedSocketExtensions(socket),
-    serverSocketExtensions
+    serverSideSocketExtensions
   );
 }

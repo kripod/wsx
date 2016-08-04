@@ -39,7 +39,7 @@ export default class ClientGroup extends Set {
 
   /**
    * Removes the specified client from the group.
-   * @param {Object} client Client to be removed.
+   * @param {ServerSideSocket} client Socket of the client to be removed.
    * @returns {boolean} `true` if the client has been removed successfully;
    * otherwise `false`.
    */

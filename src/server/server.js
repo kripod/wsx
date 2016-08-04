@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import { Server as WebSocketServer } from 'uws';
 import ClientGroup from './client-group';
-import { extendServerSocket } from '../socket-extensions';
+import { extendServerSideSocket } from '../socket-extensions';
 import { handleMessage } from '../utils';
 
 /**
@@ -13,14 +13,14 @@ export default class Server extends EventEmitter {
    * Connection event, fired when a client has connected successfully.
    * @event connect
    * @memberof Server
-   * @param {Object} client Connected client instance.
+   * @param {ServerSideSocket} client Connected client socket instance.
    */
 
   /**
    * Disconnection event, fired when a client disconnects.
    * @event disconnect
    * @memberof Server
-   * @param {Object} client Disconnected client instance.
+   * @param {ServerSideSocket} client Disconnected client socket instance.
    * @param {number} code Close status code sent by the client.
    * @param {string} reason Reason why the client closed the connection.
    */
@@ -29,7 +29,7 @@ export default class Server extends EventEmitter {
    * Generic message event, fired when any message is received.
    * @event message
    * @memberof Server
-   * @param {Object} client Sender of the message.
+   * @param {ServerSideSocket} client Socket of the message's sender.
    * @param {*} data Full message data.
    */
 
@@ -37,7 +37,7 @@ export default class Server extends EventEmitter {
    * Typeful message event, fired when a typeful message is received.
    * @event message:[type]
    * @memberof Server
-   * @param {Object} client Sender of the message.
+   * @param {ServerSideSocket} client Socket of the message's sender.
    * @param {*} payload Payload of the message.
    */
 
@@ -46,7 +46,8 @@ export default class Server extends EventEmitter {
    * @event error
    * @memberof Server
    * @param {Object} error Error object.
-   * @param {Object} [client] Client causing the error.
+   * @param {ServerSideSocket} [client] Socket of the client which caused the
+   * error.
    */
 
   /**
@@ -83,7 +84,7 @@ export default class Server extends EventEmitter {
 
     this.base.on('connection', (client) => {
       // Extend the functionality of clients
-      extendServerSocket(client, this);
+      extendServerSideSocket(client, this);
 
       // Add the connected client to the main group of clients
       this.clients.add(client);
