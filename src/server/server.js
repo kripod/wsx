@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import { Server as WebSocketServer } from 'uws';
-import ClientGroup from './client-group';
+import SocketGroup from './socket-group';
 import MessageSerializer from '../message-serializer';
 import { extendServerSideSocket } from '../socket-extensions';
 
@@ -10,26 +10,26 @@ import { extendServerSideSocket } from '../socket-extensions';
  */
 export default class Server extends EventEmitter {
   /**
-   * Connection event, fired when a client has connected successfully.
+   * Connection event, fired when a socket has connected successfully.
    * @event connect
    * @memberof Server
-   * @param {ServerSideSocket} client Connected client socket instance.
+   * @param {ServerSideSocket} socket Connected socket instance.
    */
 
   /**
-   * Disconnection event, fired when a client disconnects.
+   * Disconnection event, fired when a socket disconnects.
    * @event disconnect
    * @memberof Server
-   * @param {ServerSideSocket} client Disconnected client socket instance.
-   * @param {number} code Close status code sent by the client.
-   * @param {string} reason Reason why the client closed the connection.
+   * @param {ServerSideSocket} socket Disconnected socket instance.
+   * @param {number} code Close status code sent by the socket.
+   * @param {string} reason Reason why the socket closed the connection.
    */
 
   /**
    * Message event, fired when a typeful message is received.
    * @event message:[type]
    * @memberof Server
-   * @param {ServerSideSocket} client Socket of the message's sender.
+   * @param {ServerSideSocket} socket Socket of the message's sender.
    * @param {*} payload Payload of the message.
    */
 
@@ -38,8 +38,7 @@ export default class Server extends EventEmitter {
    * @event error
    * @memberof Server
    * @param {Object} error Error object.
-   * @param {ServerSideSocket} [client] Socket of the client which caused the
-   * error.
+   * @param {ServerSideSocket} [socket] Socket which caused the error.
    */
 
   /**
@@ -56,17 +55,17 @@ export default class Server extends EventEmitter {
   messageSerializer;
 
   /**
-   * Store for every connected client.
-   * @type {ClientGroup}
+   * Store for every connected socket.
+   * @type {SocketGroup}
    */
-  clients = new ClientGroup();
+  sockets = new SocketGroup();
 
   /**
-   * Store for client groups.
-   * @type {ClientGroup[]}
+   * Store for socket groups.
+   * @type {Object.<string, SocketGroup>}
    * @private
    */
-  clientGroups = {};
+  socketGroups = {};
 
   /**
    * @param {Object} options Options to construct the server with. Every option
@@ -83,35 +82,35 @@ export default class Server extends EventEmitter {
 
     this.socket = new WebSocketServer(options, successCallback);
 
-    this.socket.on('connection', (client) => {
-      // Extend the functionality of clients
-      extendServerSideSocket(client, this);
+    this.socket.on('connection', (socket) => {
+      // Extend the functionality of sockets
+      extendServerSideSocket(socket, this);
 
-      // Add the connected client to the main group of clients
-      this.clients.add(client);
+      // Add the connected socket to the main group of sockets
+      this.sockets.add(socket);
 
-      client.on('close', (code, reason) => {
-        // Remove the disconnected client from every group
-        this.clients.delete(client);
-        for (const clientGroup of Object.values(this.clientGroups)) {
-          clientGroup.delete(client);
+      socket.on('close', (code, reason) => {
+        // Remove the disconnected socket from every group
+        this.sockets.delete(socket);
+        for (const socketGroup of Object.values(this.socketGroups)) {
+          socketGroup.delete(socket);
         }
 
-        this.emit('disconnect', client, code, reason);
+        this.emit('disconnect', socket, code, reason);
       });
 
-      client.on('message', (data) => {
+      socket.on('message', (data) => {
         const { type, payload } = this.messageSerializer.deserialize(data);
 
         // Validate message type
         if (type && type.constructor === String) {
-          this.emit(`message:${type}`, client, payload);
+          this.emit(`message:${type}`, socket, payload);
         }
       });
 
-      client.on('error', (error) => this.emit('error', error, client));
+      socket.on('error', (error) => this.emit('error', error, socket));
 
-      this.emit('connect', client);
+      this.emit('connect', socket);
     });
 
     this.socket.on('error', (error) => this.emit('error', error));
@@ -126,15 +125,15 @@ export default class Server extends EventEmitter {
   }
 
   /**
-   * Retrieves a client group by its ID. Creates a new group if necessary.
+   * Retrieves a socket group by its ID. Creates a new group if necessary.
    * @param {string} id ID of the group.
    * @returns {Group}
    */
-  getClientGroup(id) {
-    let group = this.clientGroups[id];
+  getSocketGroup(id) {
+    let group = this.socketGroups[id];
     if (!group) {
-      group = new ClientGroup(this);
-      this.clientGroups[id] = group;
+      group = new SocketGroup(this);
+      this.socketGroups[id] = group;
     }
     return group;
   }

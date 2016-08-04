@@ -24,11 +24,11 @@ test.serial.cb('connect', (t) => {
     port,
     plugins: [(wsxServer) => { wsxServer.isPluginTestSuccessful = true; }],
   });
-  t.is(server.clients.size, 0);
+  t.is(server.sockets.size, 0);
 
   let connectedClientCount = 0;
   server.on('connect', () => {
-    t.is(server.clients.size, ++connectedClientCount);
+    t.is(server.sockets.size, ++connectedClientCount);
 
     if (connectedClientCount === CLIENT_COUNT) {
       t.end();
@@ -57,9 +57,9 @@ test.serial.cb('send/receive data', (t) => {
   const expectedPayload = { text: 'Hello, World!' };
   const eventsOrder = [];
 
-  server.once(`message:${expectedType}`, (client, payload) => {
+  server.once(`message:${expectedType}`, (socket, payload) => {
     t.deepEqual(payload, expectedPayload);
-    client.send(expectedType, expectedPayload);
+    socket.send(expectedType, expectedPayload);
     eventsOrder.push(1);
   });
 
@@ -79,8 +79,8 @@ test.serial.cb('broadcast data', (t) => {
   const expectedType = 'position';
   const expectedPayload = { x: 10, y: 20 };
 
-  server.once(`message:${expectedType}`, (client, payload) => {
-    client.broadcast(expectedType, payload);
+  server.once(`message:${expectedType}`, (socket, payload) => {
+    socket.broadcast(expectedType, payload);
   });
 
   clients[0].once(`message:${expectedType}`, () => t.fail);
@@ -100,36 +100,36 @@ test.serial.cb('broadcast data', (t) => {
   clients[0].send(expectedType, expectedPayload);
 });
 
-test.serial.cb('client groups', (t) => {
+test.serial.cb('socket groups', (t) => {
   const groupIds = [
     'dc847faf83626c8e2c2dd2ce3eda1d9418f3705e',
     '5a149824a387790fcb8b3956a7d5e467692546fe',
   ];
 
   let messagesReceived = 0;
-  server.on('message:join', (client, { id }) => {
-    let clientGroup = server.getClientGroup(id);
-    if (clientGroup.add(client).size === 1) {
-      // Remove client from the group
-      t.not(server.clientGroups[id], undefined);
-      t.true(clientGroup.delete(client));
-      t.false(clientGroup.delete(client));
-      t.is(server.clientGroups[id], undefined);
+  server.on('message:join', (socket, { id }) => {
+    let socketGroup = server.getSocketGroup(id);
+    if (socketGroup.add(socket).size === 1) {
+      // Remove socket from the group
+      t.not(server.socketGroups[id], undefined);
+      t.true(socketGroup.delete(socket));
+      t.false(socketGroup.delete(socket));
+      t.is(server.socketGroups[id], undefined);
 
-      // Re-add client to the group
-      clientGroup = server.getClientGroup(id).add(client);
+      // Re-add socket to the group
+      server.getSocketGroup(id).add(socket);
     }
 
     if (++messagesReceived === 3) {
       for (let i = 1; i >= 0; --i) {
-        clientGroup = server.getClientGroup(groupIds[i]);
-        t.is(clientGroup.size, i + 1);
+        socketGroup = server.getSocketGroup(groupIds[i]);
+        t.is(socketGroup.size, i + 1);
 
         // Clear the group
-        clientGroup.send('clear');
-        t.not(server.clientGroups[groupIds[i]], undefined);
-        clientGroup.clear();
-        t.is(server.clientGroups[groupIds[i]], undefined);
+        socketGroup.send('clear');
+        t.not(server.socketGroups[groupIds[i]], undefined);
+        socketGroup.clear();
+        t.is(server.socketGroups[groupIds[i]], undefined);
       }
     }
   });
@@ -146,18 +146,18 @@ test.serial.cb('disconnect', (t) => {
     let connectedClientCount = CLIENT_COUNT;
     server.on('disconnect', () => {
       connectedClientCount -= 1;
-      t.is(server.clients.size, connectedClientCount);
+      t.is(server.sockets.size, connectedClientCount);
 
       if (connectedClientCount === 0) {
         // Ensure that there are no empty client groups left
-        t.deepEqual(server.clientGroups, {});
+        t.deepEqual(server.socketGroups, {});
         t.end();
       }
     });
 
     // Disconnect clients
-    for (const client2 of clients) {
-      client2.disconnect();
+    for (const client of clients) {
+      client.disconnect();
     }
   });
 

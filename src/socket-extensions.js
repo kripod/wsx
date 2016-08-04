@@ -11,16 +11,17 @@ function getSharedSocketExtensions(socket, messageSerializer) {
      * Transmits a message through the socket.
      * @name Socket#send
      * @memberof SocketExtensions
-     * @param {...*} [params] Parameters of the message to be sent.
+     * @param {string} type Type of the message.
+     * @param {*} [payload] Payload of the message.
      */
-    send: (...params) => {
-      sendRaw(messageSerializer.serialize(...params));
+    send: (type, payload) => {
+      sendRaw(messageSerializer.serialize(type, payload));
     },
   };
 }
 
 /**
- * Applies extensions on a client socket.
+ * Applies extensions on a client side socket.
  * @memberof SocketExtensions
  * @param {ClientSideSocket} socket Socket to apply extensions on.
  * @param {Client} client Client instance which the socket is owned by.
@@ -53,9 +54,9 @@ export function extendServerSideSocket(socket, server) {
      * @param {*} [payload] Payload of the message.
      */
     broadcast: (type, payload) => {
-      for (const client of server.clients) {
-        if (client !== this) {
-          client.send(type, payload);
+      for (const socket2 of server.sockets) {
+        if (socket2 !== this) {
+          socket2.send(type, payload);
         }
       }
     },

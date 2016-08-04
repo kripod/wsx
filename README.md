@@ -44,8 +44,8 @@ automatically.
 
 ```js
 // Register an event handler on the server side for message type `echo`
-wsxServer.on('message:echo', (client, payload) => {
-  client.send('echo', payload);
+wsxServer.on('message:echo', (socket, payload) => {
+  socket.send('echo', payload);
 });
 
 // Register an event handler on the client side for message type `echo`
@@ -60,38 +60,38 @@ wsxClient.send('echo', 'Hello, World!');
 
 #### Multiple recipients
 
-You can broadcast messages or send them to client groups.
+You can broadcast messages or send them to socket groups.
 
 ```js
-wsxServer.on('message', (client, data) => {
-  // Forward the message to everyone else except for the client that sent it
-  client.broadcast(data);
+wsxServer.on('message', (socket, data) => {
+  // Forward the message to everyone else except for the socket that sent it
+  socket.broadcast(data);
 
-  // Forward the message to everyone, including the client that sent it
-  wsxServer.clients.send(data);
+  // Forward the message to everyone, including the socket that sent it
+  wsxServer.sockets.send(data);
 
-  // Forward the message to a specific group of clients
-  wsxServer.getClientGroup('clientGroupId').send(data);
+  // Forward the message to a specific group of sockets
+  wsxServer.getSocketGroup('socketGroupId').send(data);
 });
 ```
 
-### Client groups
+### Socket groups
 
-Client groups can be established on the server to handle multiple clients with
-ease. Their underlying `Set` of clients is managed automatically, meaning that
-you don't need to care about removing disconnected clients.
+Socket groups can be established on the server to handle multiple sockets with
+ease. Their underlying `Set` of sockets is managed automatically, meaning that
+you don't need to care about removing disconnected sockets.
 
 ```js
-wsxServer.on('message:join', (client, groupId) => {
-  // Inexistent client groups are created automatically
-  wsxServer.getClientGroup(groupId).add(client);
-  client.broadcast('join', groupId);
+wsxServer.on('message:join', (socket, groupId) => {
+  // Inexistent socket groups are created automatically
+  wsxServer.getSocketGroup(groupId).add(socket);
+  socket.broadcast('join', groupId);
 });
 
-wsxServer.on('message:leave', (client, groupId) => {
-  // Client groups with zero clients are destroyed automatically
-  wsxServer.getClientGroup(groupId).remove(client);
-  client.broadcast('leave', groupId);
+wsxServer.on('message:leave', (socket, groupId) => {
+  // Socket groups with zero sockets are destroyed automatically
+  wsxServer.getSocketGroup(groupId).remove(socket);
+  socket.broadcast('leave', groupId);
 });
 
 wsxClient.send('join', 'developers');
@@ -102,10 +102,10 @@ wsxClient.send('join', 'developers');
 Message transmission errors are handled asynchronously:
 
 ```js
-wsxServer.on('error', (error, client) => {
+wsxServer.on('error', (error, socket) => {
   // Server error
-  if (client) {
-    // The error has a client involved
+  if (socket) {
+    // The error was caused by a socket
   }
 });
 
@@ -124,6 +124,10 @@ wsxClient.on('error', () => {
 
 WebSocket client with extensions.
 
+#### messageSerializer
+
+Message serializer instance.
+
 #### constructor
 
 **Parameters**
@@ -136,11 +140,12 @@ WebSocket client with extensions.
 
 #### send
 
-Transmits data to the server.
+Transmits a message to the server.
 
 **Parameters**
 
--   `params` **\[...Any]** Data to be sent.
+-   `type` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Type of the message.
+-   `payload` **\[Any]** Payload of the message.
 
 #### disconnect
 
@@ -156,11 +161,11 @@ Closes the connection or connection attempt, if any.
 
 #### connect
 
-Connection event, fired when the client has connected successfully.
+Connection event, fired when the socket has connected successfully.
 
 #### disconnect
 
-Disconnection event, fired when the client disconnects.
+Disconnection event, fired when the socket disconnects.
 
 **Parameters**
 
@@ -169,17 +174,9 @@ Disconnection event, fired when the client disconnects.
 -   `wasClean` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Indicates whether or not the connection was
     cleanly closed.
 
-#### message
-
-Generic message event, fired when any message is received.
-
-**Parameters**
-
--   `data` **Any** Full message data.
-
 #### message:\[type]
 
-Typeful message event, fired when a typeful message is received.
+Message event, fired when a typeful message is received.
 
 **Parameters**
 
@@ -189,44 +186,19 @@ Typeful message event, fired when a typeful message is received.
 
 Error event, fired when an unexpected error occurs.
 
-### ClientGroup
-
-**Extends Set**
-
-Represents a group of clients.
-
-#### clear
-
-Removes all clients from the group.
-
-#### delete
-
-Removes the specified client from the group.
-
-**Parameters**
-
--   `client` **ServerSideSocket** Socket of the client to be removed.
-
-Returns **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** `true` if the client has been removed successfully;
-otherwise `false`.
-
-#### send
-
-Transmits data to every client in the group.
-
-**Parameters**
-
--   `params` **\[...Any]** Data to be sent.
-
 ### Server
 
 **Extends EventEmitter**
 
 WebSocket server with extensions.
 
-#### clients
+#### messageSerializer
 
-Store for every connected client.
+Message serializer instance.
+
+#### sockets
+
+Store for every connected socket.
 
 #### constructor
 
@@ -239,15 +211,23 @@ Store for every connected client.
 -   `successCallback` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** Function to be executed on successful
     initialization.
 
-#### getClientGroup
+#### getSocketGroup
 
-Retrieves a client group by its ID. Creates a new group if necessary.
+Retrieves a socket group by its ID. Creates a new group if necessary.
 
 **Parameters**
 
 -   `id` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** ID of the group.
 
 Returns **Group** 
+
+#### connect
+
+Connection event, fired when a socket has connected successfully.
+
+**Parameters**
+
+-   `socket` **ServerSideSocket** Connected socket instance.
 
 #### error
 
@@ -256,44 +236,51 @@ Error event, fired when an unexpected error occurs.
 **Parameters**
 
 -   `error` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Error object.
--   `client` **\[ServerSideSocket]** Socket of the client which caused the
-    error.
+-   `socket` **\[ServerSideSocket]** Socket which caused the error.
 
 #### message:\[type]
 
-Typeful message event, fired when a typeful message is received.
+Message event, fired when a typeful message is received.
 
 **Parameters**
 
--   `client` **ServerSideSocket** Socket of the message's sender.
+-   `socket` **ServerSideSocket** Socket of the message's sender.
 -   `payload` **Any** Payload of the message.
-
-#### message
-
-Generic message event, fired when any message is received.
-
-**Parameters**
-
--   `client` **ServerSideSocket** Socket of the message's sender.
--   `data` **Any** Full message data.
 
 #### disconnect
 
-Disconnection event, fired when a client disconnects.
+Disconnection event, fired when a socket disconnects.
 
 **Parameters**
 
--   `client` **ServerSideSocket** Disconnected client socket instance.
--   `code` **[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Close status code sent by the client.
--   `reason` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Reason why the client closed the connection.
+-   `socket` **ServerSideSocket** Disconnected socket instance.
+-   `code` **[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Close status code sent by the socket.
+-   `reason` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Reason why the socket closed the connection.
 
-#### connect
+### MessageSerializer
 
-Connection event, fired when a client has connected successfully.
+Serializes and deserializes messages transmitted over a WebSocket connection.
+
+#### serialize
+
+Serializes a message to be sent over a WebSocket connection.
 
 **Parameters**
 
--   `client` **ServerSideSocket** Connected client socket instance.
+-   `type` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Type of the message.
+-   `payload` **\[Any]** Payload of the message.
+
+Returns **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Buffer](https://nodejs.org/api/buffer.html) \| [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer))** 
+
+#### deserialize
+
+Deserializes a message received over a WebSocket connection.
+
+**Parameters**
+
+-   `data` **Any** Serialized message data.
+
+Returns **Any** 
 
 ### SocketExtensions
 
@@ -302,47 +289,53 @@ Provides extensions for sockets.
 **Parameters**
 
 -   `socket`  
+-   `messageSerializer`  
 
 #### Socket#send
 
-Transmits data through the socket.
+Transmits a message through the socket.
 
 **Parameters**
 
--   `params` **\[...Any]** Data to be sent.
+-   `type` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Type of the message.
+-   `payload` **\[Any]** Payload of the message.
 
 #### ServerSideSocket#broadcast
 
-Transmits data to everyone else except for the socket that starts it.
+Transmits a message to everyone else except for the socket that starts
+it.
 
 **Parameters**
 
--   `params` **\[...Any]** Data to be sent.
+-   `type` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Type of the message.
+-   `payload` **\[Any]** Payload of the message.
 
-### MessageSerializer
+### SocketGroup
 
-Serializes and deserializes messages transmitted over a WebSocket connection.
+**Extends Set**
 
-**Parameters**
+Represents a group of sockets.
 
--   `data`  
+#### clear
 
-#### serializeMessage
+Removes all sockets from the group.
 
-Serializes a message to be sent over a WebSocket connection.
+#### delete
 
-**Parameters**
-
--   `data` **Any** Full message data.
-
-Returns **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Buffer](https://nodejs.org/api/buffer.html) \| [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer))** 
-
-#### deserializeMessage
-
-Deserializes a message received over a WebSocket connection.
+Removes the specified socket from the group.
 
 **Parameters**
 
--   `data` **Any** Full message data.
+-   `socket` **ServerSideSocket** Socket to be removed.
 
-Returns **Any** 
+Returns **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** `true` if the socket has been removed successfully;
+otherwise `false`.
+
+#### send
+
+Transmits a message to every socket in the group.
+
+**Parameters**
+
+-   `type` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Type of the message.
+-   `payload` **\[Any]** Payload of the message.

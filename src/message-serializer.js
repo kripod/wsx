@@ -19,14 +19,13 @@ export default class MessageSerializer {
 
   /**
    * Deserializes a message received over a WebSocket connection.
-   * @param {*} serializedData Serialized message data.
-   * @param {ServerSocket} [client] Socket of the message's sender.
+   * @param {*} data Serialized message data.
    * @returns {*}
    */
-  static deserialize(serializedData) {
+  static deserialize(data) {
     // Parse JSON-serialized strings
-    return serializedData && serializedData.constructor === String ?
-      JSON.parse(serializedData) :
-      serializedData;
+    return data && data.constructor === String ?
+      JSON.parse(data) :
+      data;
   }
 }

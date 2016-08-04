@@ -9,13 +9,13 @@ import { extendClientSideSocket } from '../socket-extensions';
  */
 export default class Client extends EventEmitter {
   /**
-   * Connection event, fired when the client has connected successfully.
+   * Connection event, fired when the socket has connected successfully.
    * @event connect
    * @memberof Client
    */
 
   /**
-   * Disconnection event, fired when the client disconnects.
+   * Disconnection event, fired when the socket disconnects.
    * @event disconnect
    * @memberof Client
    * @param {number} code Close status code sent by the server.
