@@ -96,7 +96,11 @@ export default class Server extends EventEmitter {
        * between.
        */
       function broadcast(type, payload, sockets = socket.parent.sockets) {
-        socket.parent.bulkSend(sockets, type, payload);
+        socket.parent.bulkSend(
+          [...sockets].filter((socket2) => socket2 !== socket),
+          type,
+          payload
+        );
       }
     );
 

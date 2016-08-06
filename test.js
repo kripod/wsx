@@ -83,7 +83,7 @@ test.serial.cb('broadcast data', (t) => {
     socket.broadcast(expectedType, payload);
   });
 
-  clients[0].once(`message:${expectedType}`, () => t.fail);
+  clients[0].once(`message:${expectedType}`, () => t.fail());
 
   let messagesReceived = 0;
   for (let i = CLIENT_COUNT - 1; i > 0; --i) {
