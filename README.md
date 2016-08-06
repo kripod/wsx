@@ -147,6 +147,10 @@ const wsxClientWithPlugins = new Client('ws://localhost:3001', {
 
 WebSocket client with extensions.
 
+#### socketExtensions
+
+Socket extensions to be applied on every managed socket.
+
 #### messageSerializer
 
 Message serializer instance.
@@ -186,6 +190,18 @@ Closes the connection or connection attempt, if any.
 
 Connection event, fired when the socket has connected successfully.
 
+#### error
+
+Error event, fired when an unexpected error occurs.
+
+#### message:\[type]
+
+Message event, fired when a typeful message is received.
+
+**Parameters**
+
+-   `payload` **Any** Payload of the message.
+
 #### disconnect
 
 Disconnection event, fired when the socket disconnects.
@@ -197,23 +213,15 @@ Disconnection event, fired when the socket disconnects.
 -   `wasClean` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Indicates whether or not the connection was
     cleanly closed.
 
-#### message:\[type]
-
-Message event, fired when a typeful message is received.
-
-**Parameters**
-
--   `payload` **Any** Payload of the message.
-
-#### error
-
-Error event, fired when an unexpected error occurs.
-
 ### Server
 
 **Extends EventEmitter**
 
 WebSocket server with extensions.
+
+#### socketExtensions
+
+Socket extensions to be applied on every managed socket.
 
 #### messageSerializer
 
@@ -250,7 +258,26 @@ Connection event, fired when a socket has connected successfully.
 
 **Parameters**
 
--   `socket` **ServerSideSocket** Connected socket instance.
+-   `socket` **[ServerSideSocket](#serversidesocket)** Connected socket instance.
+
+#### disconnect
+
+Disconnection event, fired when a socket disconnects.
+
+**Parameters**
+
+-   `socket` **[ServerSideSocket](#serversidesocket)** Disconnected socket instance.
+-   `code` **[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Close status code sent by the socket.
+-   `reason` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Reason why the socket closed the connection.
+
+#### message:\[type]
+
+Message event, fired when a typeful message is received.
+
+**Parameters**
+
+-   `socket` **[ServerSideSocket](#serversidesocket)** Socket of the message's sender.
+-   `payload` **Any** Payload of the message.
 
 #### error
 
@@ -259,26 +286,23 @@ Error event, fired when an unexpected error occurs.
 **Parameters**
 
 -   `error` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Error object.
--   `socket` **\[ServerSideSocket]** Socket which caused the error.
+-   `socket` **\[[ServerSideSocket](#serversidesocket)]** Socket which caused the error.
 
-#### message:\[type]
+### ServerSideSocket
 
-Message event, fired when a typeful message is received.
+**Extends Socket**
 
-**Parameters**
+Represents a socket owned by a server.
 
--   `socket` **ServerSideSocket** Socket of the message's sender.
--   `payload` **Any** Payload of the message.
+#### broadcast
 
-#### disconnect
-
-Disconnection event, fired when a socket disconnects.
+Transmits a message to everyone else except for the socket that starts
+it.
 
 **Parameters**
 
--   `socket` **ServerSideSocket** Disconnected socket instance.
--   `code` **[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Close status code sent by the socket.
--   `reason` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Reason why the socket closed the connection.
+-   `type` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Type of the message.
+-   `payload` **\[Any]** Payload of the message.
 
 ### MessageSerializer
 
@@ -305,28 +329,38 @@ Deserializes a message received over a WebSocket connection.
 
 Returns **Any** 
 
-### SocketExtensions
+### SocketExtensionSet
 
-Provides extensions for sockets.
+**Extends Set**
+
+Represents a set of socket extensions.
+
+#### constructor
 
 **Parameters**
 
--   `socket`  
--   `messageSerializer`  
+-   `iterable` **\[Any]** Elements to be initially added to the set.
 
-#### Socket#send
+#### apply
+
+Applies the set of extensions on the given socket.
+
+**Parameters**
+
+-   `socket` **[Socket](#socket)** Socket to apply extensions on.
+-   `parent` **([Server](#server) \| [Client](#client))** Parent of the given socket.
+
+Returns **[Socket](#socket)** 
+
+### Socket
+
+**Extends Set**
+
+Represents a socket owned by a server or a client.
+
+#### send
 
 Transmits a message through the socket.
-
-**Parameters**
-
--   `type` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Type of the message.
--   `payload` **\[Any]** Payload of the message.
-
-#### ServerSideSocket#broadcast
-
-Transmits a message to everyone else except for the socket that starts
-it.
 
 **Parameters**
 
@@ -349,7 +383,7 @@ Removes the specified socket from the group.
 
 **Parameters**
 
--   `socket` **ServerSideSocket** Socket to be removed.
+-   `socket` **[ServerSideSocket](#serversidesocket)** Socket to be removed.
 
 Returns **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** `true` if the socket has been removed successfully;
 otherwise `false`.

@@ -1,6 +1,8 @@
 toc:
   - Server
   - Client
-  - SocketExtensions
+  - Socket
+  - ServerSideSocket
   - SocketGroup
+  - SocketExtensionSet
   - MessageSerializer

@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import { w3cwebsocket as WebSocketClient } from 'websocket';
 import MessageSerializer from '../message-serializer';
-import { extendClientSideSocket } from '../socket-extensions';
+import SocketExtensionSet from '../socket-extension-set';
 
 /**
  * WebSocket client with extensions.
@@ -45,6 +45,12 @@ export default class Client extends EventEmitter {
   socket;
 
   /**
+   * Socket extensions to be applied on every managed socket.
+   * @type {SocketExtensionSet}
+   */
+  socketExtensions = new SocketExtensionSet();
+
+  /**
    * Message serializer instance.
    * @type {MessageSerializer}
    */
@@ -62,7 +68,7 @@ export default class Client extends EventEmitter {
 
     this.messageSerializer = MessageSerializer;
 
-    this.socket = extendClientSideSocket(
+    this.socket = this.socketExtensions.apply(
       new WebSocketClient(url, options.protocols),
       this
     );

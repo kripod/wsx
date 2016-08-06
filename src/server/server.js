@@ -2,7 +2,7 @@ import EventEmitter from 'events';
 import { Server as WebSocketServer } from 'uws';
 import SocketGroup from './socket-group';
 import MessageSerializer from '../message-serializer';
-import { extendServerSideSocket } from '../socket-extensions';
+import SocketExtensionSet from '../socket-extension-set';
 
 /**
  * WebSocket server with extensions.
@@ -49,6 +49,12 @@ export default class Server extends EventEmitter {
   socket;
 
   /**
+   * Socket extensions to be applied on every managed socket.
+   * @type {SocketExtensionSet}
+   */
+  socketExtensions = new SocketExtensionSet();
+
+  /**
    * Message serializer instance.
    * @type {MessageSerializer}
    */
@@ -80,11 +86,29 @@ export default class Server extends EventEmitter {
 
     this.messageSerializer = MessageSerializer;
 
+    this.socketExtensions.add((socket) =>
+      /**
+       * Transmits a message to everyone else except for the socket that starts
+       * it.
+       * @name broadcast
+       * @memberof ServerSideSocket
+       * @param {string} type Type of the message.
+       * @param {*} [payload] Payload of the message.
+       */
+      function broadcast(type, payload) {
+        for (const socket2 of socket.parent.sockets) {
+          if (socket2 !== socket) {
+            socket2.send(type, payload);
+          }
+        }
+      }
+    );
+
     this.socket = new WebSocketServer(options, successCallback);
 
     this.socket.on('connection', (socket) => {
       // Extend the functionality of sockets
-      extendServerSideSocket(socket, this);
+      this.socketExtensions.apply(socket, this);
 
       // Add the connected socket to the main group of sockets
       this.sockets.add(socket);
