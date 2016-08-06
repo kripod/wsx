@@ -57,8 +57,14 @@ export default class SocketGroup extends Set {
    * @param {*} [payload] Payload of the message.
    */
   send(type, payload) {
+    const preparedMessage = this.parent.base.prepareMessage(
+      this.parent.messageSerializer.serialize(type, payload)
+    );
+
     for (const socket of this) {
-      socket.send(type, payload);
+      socket.sendPrepared(preparedMessage);
     }
+
+    this.parent.base.finalizeMessage(preparedMessage);
   }
 }

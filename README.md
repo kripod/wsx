@@ -15,8 +15,10 @@ over the network without sacrificing stability and scalability.
 
 ## Getting started
 
-Please refer to the directory of examples to see more comprehensive walkthroughs
-leveraging the possibilities within the library.
+Please refer to the
+[API reference](https://github.com/kripod/wsx/blob/master/API.md) and the
+[directory of examples](https://github.com/kripod/wsx/tree/master/examples) to
+learn more about leveraging the possibilities within the library.
 
 ### Initializing communication channels
 
@@ -27,8 +29,6 @@ import Server from 'wsx/server';
 const wsxServer = new Server({ port: 3000 });
 const wsxClient = new Client('ws://localhost:3000');
 ```
-
-See the [API Reference](API.md) for further options.
 
 _**Pro tip**: WSX tries to detect its environment automatically. This means that
 `import Server from 'wsx';` is a valid statement for Node environments, and

@@ -1,32 +1,32 @@
 # Server
 
-[src/server/server.js:11-164](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/server.js#L11-L164 "Source code on GitHub")
+[src/server/server.js:11-170](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/server.js#L11-L170 "Source code on GitHub")
 
 **Extends EventEmitter**
 
 WebSocket server with extensions.
 
+## sockets
+
+[src/server/server.js:55-55](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/server.js#L55-L55 "Source code on GitHub")
+
+Store for every connected socket.
+
 ## socketExtensions
 
-[src/server/server.js:55-55](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/server.js#L55-L55 "Source code on GitHub")
+[src/server/server.js:68-68](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/server.js#L68-L68 "Source code on GitHub")
 
 Socket extensions to be applied on every managed socket.
 
 ## messageSerializer
 
-[src/server/server.js:61-61](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/server.js#L61-L61 "Source code on GitHub")
+[src/server/server.js:74-74](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/server.js#L74-L74 "Source code on GitHub")
 
 Message serializer instance.
 
-## sockets
-
-[src/server/server.js:67-67](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/server.js#L67-L67 "Source code on GitHub")
-
-Store for every connected socket.
-
 ## constructor
 
-[src/server/server.js:84-149](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/server.js#L84-L149 "Source code on GitHub")
+[src/server/server.js:84-155](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/server.js#L84-L155 "Source code on GitHub")
 
 **Parameters**
 
@@ -39,7 +39,7 @@ Store for every connected socket.
 
 ## getSocketGroup
 
-[src/server/server.js:156-163](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/server.js#L156-L163 "Source code on GitHub")
+[src/server/server.js:162-169](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/server.js#L162-L169 "Source code on GitHub")
 
 Retrieves a socket group by its ID. Creates a new group if necessary.
 
@@ -49,19 +49,9 @@ Retrieves a socket group by its ID. Creates a new group if necessary.
 
 Returns **Group** 
 
-## connect
-
-[src/server/server.js:49-49](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/server.js#L49-L49 "Source code on GitHub")
-
-Connection event, fired when a socket has connected successfully.
-
-**Parameters**
-
--   `socket` **[ServerSideSocket](#serversidesocket)** Connected socket instance.
-
 ## message:\[type]
 
-[src/server/server.js:49-49](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/server.js#L49-L49 "Source code on GitHub")
+[src/server/server.js:49-49](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/server.js#L49-L49 "Source code on GitHub")
 
 Message event, fired when a typeful message is received.
 
@@ -72,7 +62,7 @@ Message event, fired when a typeful message is received.
 
 ## disconnect
 
-[src/server/server.js:49-49](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/server.js#L49-L49 "Source code on GitHub")
+[src/server/server.js:49-49](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/server.js#L49-L49 "Source code on GitHub")
 
 Disconnection event, fired when a socket disconnects.
 
@@ -82,9 +72,19 @@ Disconnection event, fired when a socket disconnects.
 -   `code` **[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Close status code sent by the socket.
 -   `reason` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Reason why the socket closed the connection.
 
+## connect
+
+[src/server/server.js:49-49](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/server.js#L49-L49 "Source code on GitHub")
+
+Connection event, fired when a socket has connected successfully.
+
+**Parameters**
+
+-   `socket` **[ServerSideSocket](#serversidesocket)** Connected socket instance.
+
 ## error
 
-[src/server/server.js:49-49](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/server.js#L49-L49 "Source code on GitHub")
+[src/server/server.js:49-49](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/server.js#L49-L49 "Source code on GitHub")
 
 Error event, fired when an unexpected error occurs.
 
@@ -95,7 +95,7 @@ Error event, fired when an unexpected error occurs.
 
 # Client
 
-[src/client/client.js:10-120](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/client/client.js#L10-L120 "Source code on GitHub")
+[src/client/client.js:10-118](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/client/client.js#L10-L118 "Source code on GitHub")
 
 **Extends EventEmitter**
 
@@ -103,19 +103,19 @@ WebSocket client with extensions.
 
 ## socketExtensions
 
-[src/client/client.js:51-51](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/client/client.js#L51-L51 "Source code on GitHub")
+[src/client/client.js:51-51](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/client/client.js#L51-L51 "Source code on GitHub")
 
 Socket extensions to be applied on every managed socket.
 
 ## messageSerializer
 
-[src/client/client.js:57-57](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/client/client.js#L57-L57 "Source code on GitHub")
+[src/client/client.js:57-57](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/client/client.js#L57-L57 "Source code on GitHub")
 
 Message serializer instance.
 
 ## constructor
 
-[src/client/client.js:66-98](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/client/client.js#L66-L98 "Source code on GitHub")
+[src/client/client.js:66-96](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/client/client.js#L66-L96 "Source code on GitHub")
 
 **Parameters**
 
@@ -127,7 +127,7 @@ Message serializer instance.
 
 ## send
 
-[src/client/client.js:105-107](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/client/client.js#L105-L107 "Source code on GitHub")
+[src/client/client.js:103-105](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/client/client.js#L103-L105 "Source code on GitHub")
 
 Transmits a message to the server.
 
@@ -138,7 +138,7 @@ Transmits a message to the server.
 
 ## disconnect
 
-[src/client/client.js:117-119](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/client/client.js#L117-L119 "Source code on GitHub")
+[src/client/client.js:115-117](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/client/client.js#L115-L117 "Source code on GitHub")
 
 Closes the connection or connection attempt, if any.
 
@@ -152,23 +152,19 @@ Closes the connection or connection attempt, if any.
 
 ## error
 
-[src/client/client.js:45-45](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/client/client.js#L45-L45 "Source code on GitHub")
+[src/client/client.js:45-45](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/client/client.js#L45-L45 "Source code on GitHub")
 
 Error event, fired when an unexpected error occurs.
 
-## message:\[type]
+## connect
 
-[src/client/client.js:45-45](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/client/client.js#L45-L45 "Source code on GitHub")
+[src/client/client.js:45-45](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/client/client.js#L45-L45 "Source code on GitHub")
 
-Message event, fired when a typeful message is received.
-
-**Parameters**
-
--   `payload` **Any** Payload of the message.
+Connection event, fired when the socket has connected successfully.
 
 ## disconnect
 
-[src/client/client.js:45-45](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/client/client.js#L45-L45 "Source code on GitHub")
+[src/client/client.js:45-45](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/client/client.js#L45-L45 "Source code on GitHub")
 
 Disconnection event, fired when the socket disconnects.
 
@@ -179,15 +175,19 @@ Disconnection event, fired when the socket disconnects.
 -   `wasClean` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Indicates whether or not the connection was
     cleanly closed.
 
-## connect
+## message:\[type]
 
-[src/client/client.js:45-45](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/client/client.js#L45-L45 "Source code on GitHub")
+[src/client/client.js:45-45](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/client/client.js#L45-L45 "Source code on GitHub")
 
-Connection event, fired when the socket has connected successfully.
+Message event, fired when a typeful message is received.
+
+**Parameters**
+
+-   `payload` **Any** Payload of the message.
 
 # Socket
 
-[src/socket-extension-set.js:16-58](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/socket-extension-set.js#L16-L58 "Source code on GitHub")
+[src/socket-extension-set.js:16-55](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/socket-extension-set.js#L16-L55 "Source code on GitHub")
 
 **Extends Set**
 
@@ -195,7 +195,7 @@ Represents a socket owned by a server or a client.
 
 ## send
 
-[src/socket-extension-set.js:34-36](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/socket-extension-set.js#L34-L36 "Source code on GitHub")
+[src/socket-extension-set.js:31-33](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/socket-extension-set.js#L31-L33 "Source code on GitHub")
 
 Transmits a message through the socket.
 
@@ -206,7 +206,7 @@ Transmits a message through the socket.
 
 # ServerSideSocket
 
-[src/socket-extension-set.js:16-58](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/socket-extension-set.js#L16-L58 "Source code on GitHub")
+[src/socket-extension-set.js:16-55](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/socket-extension-set.js#L16-L55 "Source code on GitHub")
 
 **Extends Socket**
 
@@ -214,7 +214,7 @@ Represents a socket owned by a server.
 
 ## broadcast
 
-[src/server/server.js:98-104](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/server.js#L98-L104 "Source code on GitHub")
+[src/server/server.js:98-110](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/server.js#L98-L110 "Source code on GitHub")
 
 Transmits a message to everyone else except for the socket that starts
 it.
@@ -223,10 +223,12 @@ it.
 
 -   `type` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Type of the message.
 -   `payload` **\[Any]** Payload of the message.
+-   `sockets` **\[[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[ServerSideSocket](#serversidesocket)>]** Sockets to broadcast the message
+    between.
 
 # SocketGroup
 
-[src/server/socket-group.js:5-64](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/socket-group.js#L5-L64 "Source code on GitHub")
+[src/server/socket-group.js:5-70](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/socket-group.js#L5-L70 "Source code on GitHub")
 
 **Extends Set**
 
@@ -234,13 +236,13 @@ Represents a group of sockets.
 
 ## clear
 
-[src/server/socket-group.js:26-38](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/socket-group.js#L26-L38 "Source code on GitHub")
+[src/server/socket-group.js:26-38](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/socket-group.js#L26-L38 "Source code on GitHub")
 
 Removes all sockets from the group.
 
 ## delete
 
-[src/server/socket-group.js:46-52](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/socket-group.js#L46-L52 "Source code on GitHub")
+[src/server/socket-group.js:46-52](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/socket-group.js#L46-L52 "Source code on GitHub")
 
 Removes the specified socket from the group.
 
@@ -253,7 +255,7 @@ otherwise `false`.
 
 ## send
 
-[src/server/socket-group.js:59-63](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/server/socket-group.js#L59-L63 "Source code on GitHub")
+[src/server/socket-group.js:59-69](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/server/socket-group.js#L59-L69 "Source code on GitHub")
 
 Transmits a message to every socket in the group.
 
@@ -264,23 +266,15 @@ Transmits a message to every socket in the group.
 
 # SocketExtensionSet
 
-[src/socket-extension-set.js:16-58](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/socket-extension-set.js#L16-L58 "Source code on GitHub")
+[src/socket-extension-set.js:16-55](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/socket-extension-set.js#L16-L55 "Source code on GitHub")
 
 **Extends Set**
 
 Represents a set of socket extensions.
 
-## constructor
-
-[src/socket-extension-set.js:20-38](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/socket-extension-set.js#L20-L38 "Source code on GitHub")
-
-**Parameters**
-
--   `iterable` **\[Any]** Elements to be initially added to the set.
-
 ## apply
 
-[src/socket-extension-set.js:46-57](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/socket-extension-set.js#L46-L57 "Source code on GitHub")
+[src/socket-extension-set.js:43-54](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/socket-extension-set.js#L43-L54 "Source code on GitHub")
 
 Applies the set of extensions on the given socket.
 
@@ -293,13 +287,13 @@ Returns **[Socket](#socket)**
 
 # MessageSerializer
 
-[src/message-serializer.js:5-31](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/message-serializer.js#L5-L31 "Source code on GitHub")
+[src/message-serializer.js:5-31](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/message-serializer.js#L5-L31 "Source code on GitHub")
 
 Serializes and deserializes messages transmitted over a WebSocket connection.
 
 ## serialize
 
-[src/message-serializer.js:12-18](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/message-serializer.js#L12-L18 "Source code on GitHub")
+[src/message-serializer.js:12-18](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/message-serializer.js#L12-L18 "Source code on GitHub")
 
 Serializes a message to be sent over a WebSocket connection.
 
@@ -312,7 +306,7 @@ Returns **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 ## deserialize
 
-[src/message-serializer.js:25-30](https://github.com/kripod/wsx/blob/259063bdf207d7ad5aa1b0ecda459e253aa5566a/src/message-serializer.js#L25-L30 "Source code on GitHub")
+[src/message-serializer.js:25-30](https://github.com/kripod/wsx/blob/bef6447346816a27abdd58811bf69d984d7fa0bb/src/message-serializer.js#L25-L30 "Source code on GitHub")
 
 Deserializes a message received over a WebSocket connection.
 

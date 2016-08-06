@@ -46,19 +46,7 @@ export default class Server extends EventEmitter {
    * @type {uws.Server}
    * @private
    */
-  socket;
-
-  /**
-   * Socket extensions to be applied on every managed socket.
-   * @type {SocketExtensionSet}
-   */
-  socketExtensions = new SocketExtensionSet();
-
-  /**
-   * Message serializer instance.
-   * @type {MessageSerializer}
-   */
-  messageSerializer;
+  base;
 
   /**
    * Store for every connected socket.
@@ -74,6 +62,18 @@ export default class Server extends EventEmitter {
   socketGroups = {};
 
   /**
+   * Socket extensions to be applied on every managed socket.
+   * @type {SocketExtensionSet}
+   */
+  socketExtensions = new SocketExtensionSet();
+
+  /**
+   * Message serializer instance.
+   * @type {MessageSerializer}
+   */
+  messageSerializer = MessageSerializer;
+
+  /**
    * @param {Object} options Options to construct the server with. Every option
    * is passed to the underlying WebSocket server implementation.
    * @param {Function[]} [options.plugins] Plugins to be used, each defined
@@ -84,8 +84,6 @@ export default class Server extends EventEmitter {
   constructor(options, successCallback) {
     super();
 
-    this.messageSerializer = MessageSerializer;
-
     this.socketExtensions.add((socket) =>
       /**
        * Transmits a message to everyone else except for the socket that starts
@@ -94,19 +92,27 @@ export default class Server extends EventEmitter {
        * @memberof ServerSideSocket
        * @param {string} type Type of the message.
        * @param {*} [payload] Payload of the message.
+       * @param {ServerSideSocket[]} [sockets] Sockets to broadcast the message
+       * between.
        */
-      function broadcast(type, payload) {
-        for (const socket2 of socket.parent.sockets) {
+      function broadcast(type, payload, sockets = socket.parent.sockets) {
+        const preparedMessage = socket.parent.base.prepareMessage(
+          socket.parent.messageSerializer.serialize(type, payload)
+        );
+
+        for (const socket2 of sockets) {
           if (socket2 !== socket) {
-            socket2.send(type, payload);
+            socket2.sendPrepared(preparedMessage);
           }
         }
+
+        socket.parent.base.finalizeMessage(preparedMessage);
       }
     );
 
-    this.socket = new WebSocketServer(options, successCallback);
+    this.base = new WebSocketServer(options, successCallback);
 
-    this.socket.on('connection', (socket) => {
+    this.base.on('connection', (socket) => {
       // Extend the functionality of sockets
       this.socketExtensions.apply(socket, this);
 
@@ -137,7 +143,7 @@ export default class Server extends EventEmitter {
       this.emit('connect', socket);
     });
 
-    this.socket.on('error', (error) => this.emit('error', error));
+    this.base.on('error', (error) => this.emit('error', error));
 
     // Parse custom options
     const { plugins = [] } = options;

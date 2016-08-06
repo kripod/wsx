@@ -42,7 +42,7 @@ export default class Client extends EventEmitter {
    * @type {websocket.w3cwebsocket}
    * @private
    */
-  socket;
+  base;
 
   /**
    * Socket extensions to be applied on every managed socket.
@@ -54,7 +54,7 @@ export default class Client extends EventEmitter {
    * Message serializer instance.
    * @type {MessageSerializer}
    */
-  messageSerializer;
+  messageSerializer = MessageSerializer;
 
   /**
    * @param {string} url URL of the WebSocket server to which to connect.
@@ -66,18 +66,16 @@ export default class Client extends EventEmitter {
   constructor(url, options = {}) {
     super();
 
-    this.messageSerializer = MessageSerializer;
-
-    this.socket = this.socketExtensions.apply(
+    this.base = this.socketExtensions.apply(
       new WebSocketClient(url, options.protocols),
       this
     );
 
-    this.socket.onopen = () => this.emit('connect');
-    this.socket.onclose = ({ code, reason, wasClean }) =>
+    this.base.onopen = () => this.emit('connect');
+    this.base.onclose = ({ code, reason, wasClean }) =>
       this.emit('disconnect', code, reason, wasClean);
 
-    this.socket.onmessage = ({ data }) => {
+    this.base.onmessage = ({ data }) => {
       const { type, payload } = this.messageSerializer.deserialize(data);
 
       // Validate message type
@@ -86,7 +84,7 @@ export default class Client extends EventEmitter {
       }
     };
 
-    this.socket.onerror = () => this.emit('error');
+    this.base.onerror = () => this.emit('error');
 
     // Parse custom options
     const { plugins = [] } = options;
@@ -103,7 +101,7 @@ export default class Client extends EventEmitter {
    * @param {*} [payload] Payload of the message.
    */
   send(type, payload) {
-    this.socket.send(type, payload);
+    this.base.send(type, payload);
   }
 
   /**
@@ -115,6 +113,6 @@ export default class Client extends EventEmitter {
    * UTF-8 text (not characters).
    */
   disconnect(code, reason) {
-    this.socket.close(code, reason);
+    this.base.close(code, reason);
   }
 }

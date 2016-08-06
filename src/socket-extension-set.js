@@ -14,11 +14,8 @@
  * @class SocketExtensionSet
  */
 export default class SocketExtensionSet extends Set {
-  /**
-   * @param {*} [iterable] Elements to be initially added to the set.
-   */
-  constructor(iterable) {
-    super(iterable);
+  constructor() {
+    super();
 
     // Add default shared socket extensions
     this.add((socket) => {
