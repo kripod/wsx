@@ -26,7 +26,7 @@
     "watch": "npm run build -- -w",
     "prepublish": "npm run build",
     "test": "cross-env NODE_ENV=test nyc -r lcov -r text ava -T 10s -v && eslint ./src ./test.js ./examples && documentation lint ./src/client ./src/server",
-    "doc": "documentation readme ./src/client ./src/server -s \"API Reference\" -c ./documentation.yml"
+    "doc": "documentation build ./src/client ./src/server -c ./documentation.yml -f md -o ./API.md -g"
   },
   "dependencies": {
     "babel-runtime": "^6.11.6",

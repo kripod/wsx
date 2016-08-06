@@ -28,8 +28,7 @@ const wsxServer = new Server({ port: 3000 });
 const wsxClient = new Client('ws://localhost:3000');
 ```
 
-See the [API Reference](https://doclets.io/kripod/wsx/master) for further
-options.
+See the [API Reference](API.md) for further options.
 
 _**Pro tip**: WSX tries to detect its environment automatically. This means that
 `import Server from 'wsx';` is a valid statement for Node environments, and
