@@ -96,17 +96,7 @@ export default class Server extends EventEmitter {
        * between.
        */
       function broadcast(type, payload, sockets = socket.parent.sockets) {
-        const preparedMessage = socket.parent.base.prepareMessage(
-          socket.parent.messageSerializer.serialize(type, payload)
-        );
-
-        for (const socket2 of sockets) {
-          if (socket2 !== socket) {
-            socket2.sendPrepared(preparedMessage);
-          }
-        }
-
-        socket.parent.base.finalizeMessage(preparedMessage);
+        socket.parent.bulkSend(sockets, type, payload);
       }
     );
 
@@ -166,5 +156,23 @@ export default class Server extends EventEmitter {
       this.socketGroups[id] = group;
     }
     return group;
+  }
+
+  /**
+   * Transmits a message to the given sockets.
+   * @param {ServerSideSocket[]} sockets Sockets to send the message to.
+   * @param {string} type Type of the message.
+   * @param {*} [payload] Payload of the message.
+   */
+  bulkSend(sockets, type, payload) {
+    const preparedMessage = this.base.prepareMessage(
+      this.messageSerializer.serialize(type, payload)
+    );
+
+    for (const socket of sockets) {
+      socket.sendPrepared(preparedMessage);
+    }
+
+    this.base.finalizeMessage(preparedMessage);
   }
 }
