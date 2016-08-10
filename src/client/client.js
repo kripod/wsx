@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import { w3cwebsocket as WebSocketClient } from 'websocket';
 import MessageSerializer from '../message-serializer';
-import SocketExtensionSet from '../socket-extension-set';
+import SocketExtensionMap from '../socket-extension-map';
 
 /**
  * Represents a WSX client.
@@ -46,9 +46,9 @@ export default class Client extends EventEmitter {
 
   /**
    * Socket extensions to be applied on every managed socket.
-   * @type {SocketExtensionSet}
+   * @type {SocketExtensionMap}
    */
-  socketExtensions = new SocketExtensionSet();
+  socketExtensions = new SocketExtensionMap();
 
   /**
    * Message serializer instance.

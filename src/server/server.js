@@ -2,7 +2,7 @@ import EventEmitter from 'events';
 import { Server as WebSocketServer } from 'uws';
 import SocketGroup from './socket-group';
 import MessageSerializer from '../message-serializer';
-import SocketExtensionSet from '../socket-extension-set';
+import SocketExtensionMap from '../socket-extension-map';
 
 /**
  * Represents a WSX server.
@@ -63,9 +63,9 @@ export default class Server extends EventEmitter {
 
   /**
    * Socket extensions to be applied on every managed socket.
-   * @type {SocketExtensionSet}
+   * @type {SocketExtensionMap}
    */
-  socketExtensions = new SocketExtensionSet();
+  socketExtensions = new SocketExtensionMap();
 
   /**
    * Message serializer instance.
@@ -84,19 +84,19 @@ export default class Server extends EventEmitter {
   constructor(options, successCallback) {
     super();
 
-    this.socketExtensions.add((socket) =>
-      /**
-       * Transmits a message to everyone else except for the socket that starts
-       * it.
-       * @name broadcast
-       * @memberof ServerSideSocket
-       * @param {string} type Type of the message.
-       * @param {*} [payload] Payload of the message.
-       * @param {ServerSideSocket[]} [sockets] Sockets to broadcast the message
-       * between.
-       */
-      function broadcast(type, payload, sockets = socket.parent.sockets) {
-        socket.parent.bulkSend(
+    /**
+     * Transmits a message to everyone else except for the socket that starts
+     * it.
+     * @name broadcast
+     * @memberof ServerSideSocket
+     * @param {string} type Type of the message.
+     * @param {*} [payload] Payload of the message.
+     * @param {ServerSideSocket[]} [sockets] Sockets to broadcast the message
+     * between.
+     */
+    this.socketExtensions.set('broadcast', (socket) =>
+      (type, payload, sockets = this.sockets) => {
+        this.bulkSend(
           [...sockets].filter((socket2) => socket2 !== socket),
           type,
           payload
