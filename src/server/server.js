@@ -5,7 +5,7 @@ import MessageSerializer from '../message-serializer';
 import SocketExtensionSet from '../socket-extension-set';
 
 /**
- * WebSocket server with extensions.
+ * Represents a WSX server.
  * @class Server
  */
 export default class Server extends EventEmitter {

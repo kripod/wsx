@@ -1,6 +1,6 @@
 # wsx
 
-WebSockets with extensions, implemented in JavaScript.
+Programmatically extensible lightweight WebSocket implementation in JavaScript.
 
 [![Version (npm)](https://img.shields.io/npm/v/wsx.svg)](https://npmjs.com/package/wsx)
 [![Build Status](https://img.shields.io/travis/kripod/wsx/master.svg)](https://travis-ci.org/kripod/wsx)

@@ -1,7 +1,7 @@
 {
   "name": "wsx",
   "version": "1.0.1",
-  "description": "WebSockets with extensions.",
+  "description": "Programmatically extensible lightweight WebSocket implementation.",
   "author": "Kristóf Poduszló <kripod@protonmail.com>",
   "license": "MIT",
   "keywords": [
@@ -25,7 +25,7 @@
     "build": "cross-env NODE_ENV=production babel ./src -d ./lib -s",
     "watch": "npm run build -- -w",
     "prepublish": "npm run build",
-    "test": "cross-env NODE_ENV=test nyc -r lcov -r text ava -T 10s -v && eslint ./src ./test.js ./examples && documentation lint ./src/client ./src/server",
+    "test": "cross-env NODE_ENV=test nyc -r lcov -r text ava -T 30s -v && eslint ./src ./test.js ./examples && documentation lint ./src/client ./src/server",
     "doc": "documentation build ./src/client ./src/server -c ./documentation.yml -f md -o ./API.md -g"
   },
   "dependencies": {
@@ -35,7 +35,7 @@
     "ws": "^1.1.1"
   },
   "devDependencies": {
-    "ava": "^0.15.2",
+    "ava": "^0.16.0",
     "babel-cli": "^6.11.4",
     "babel-eslint": "^6.1.2",
     "babel-plugin-istanbul": "^1.0.3",

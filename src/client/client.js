@@ -4,7 +4,7 @@ import MessageSerializer from '../message-serializer';
 import SocketExtensionSet from '../socket-extension-set';
 
 /**
- * WebSocket client with extensions.
+ * Represents a WSX client.
  * @class Client
  */
 export default class Client extends EventEmitter {
