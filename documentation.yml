@@ -4,5 +4,5 @@ toc:
   - Socket
   - ServerSideSocket
   - SocketGroup
-  - SocketExtensionSet
+  - SocketExtensionMap
   - MessageSerializer
