@@ -7,7 +7,7 @@ export default class MessageSerializer {
    * Serializes a message to be sent over a WebSocket connection.
    * @param {string} type Type of the message.
    * @param {*} [payload] Payload of the message.
-   * @returns {string|Buffer|ArrayBuffer}
+   * @returns {string}
    */
   static serialize(type, payload) {
     // Transform messages to JSON strings
@@ -19,8 +19,8 @@ export default class MessageSerializer {
 
   /**
    * Deserializes a message received over a WebSocket connection.
-   * @param {*} data Serialized message data.
-   * @returns {*}
+   * @param {string} data Serialized message data.
+   * @returns {Object}
    */
   static deserialize(data) {
     // Parse JSON-serialized strings
