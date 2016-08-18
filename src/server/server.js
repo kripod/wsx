@@ -1,6 +1,7 @@
 import EventEmitter from 'events';
 import { Server as WebSocketServer } from 'uws';
 import SocketGroup from './socket-group';
+import { DISALLOWED_MESSAGE_TYPES } from '../config';
 import MessageSerializer from '../message-serializer';
 import SocketExtensionMap from '../socket-extension-map';
 
@@ -11,34 +12,16 @@ import SocketExtensionMap from '../socket-extension-map';
 export default class Server extends EventEmitter {
   /**
    * Connection event, fired when a socket has connected successfully.
-   * @event connect
+   * @event connection
    * @memberof Server
    * @param {ServerSideSocket} socket Connected socket instance.
    */
 
   /**
-   * Disconnection event, fired when a socket disconnects.
-   * @event disconnect
-   * @memberof Server
-   * @param {ServerSideSocket} socket Disconnected socket instance.
-   * @param {number} code Close status code sent by the socket.
-   * @param {string} reason Reason why the socket closed the connection.
-   */
-
-  /**
-   * Message event, fired when a typeful message is received.
-   * @event message:[type]
-   * @memberof Server
-   * @param {ServerSideSocket} socket Socket of the message's sender.
-   * @param {*} payload Payload of the message.
-   */
-
-  /**
-   * Error event, fired when an unexpected error occurs.
+   * Error event, fired when an unexpected server error occurs.
    * @event error
    * @memberof Server
    * @param {Object} error Error object.
-   * @param {ServerSideSocket} [socket] Socket which caused the error.
    */
 
   /**
@@ -113,14 +96,12 @@ export default class Server extends EventEmitter {
       // Add the connected socket to the main group of sockets
       this.sockets.add(socket);
 
-      socket.on('close', (code, reason) => {
+      socket.on('close', () => {
         // Remove the disconnected socket from every group
         this.sockets.delete(socket);
         for (const socketGroup of Object.values(this.socketGroups)) {
           socketGroup.delete(socket);
         }
-
-        this.emit('disconnect', socket, code, reason);
       });
 
       socket.on('message', (data) => {
@@ -128,13 +109,16 @@ export default class Server extends EventEmitter {
 
         // Validate message type
         if (type && type.constructor === String) {
-          this.emit(`message:${type}`, socket, payload);
+          if (DISALLOWED_MESSAGE_TYPES.indexOf(type) < 0) {
+            // TODO: Throw an exception
+            return;
+          }
+
+          socket.emit(`${type}`, payload);
         }
       });
 
-      socket.on('error', (error) => this.emit('error', error, socket));
-
-      this.emit('connect', socket);
+      this.emit('connection', socket);
     });
 
     this.base.on('error', (error) => this.emit('error', error));

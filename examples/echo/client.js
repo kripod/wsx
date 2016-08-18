@@ -6,7 +6,7 @@ export default class EchoClient extends Client {
   constructor(...params) {
     super(...params);
 
-    this.on('message:echo', this.onEcho);
+    this.on('echo', this.onEcho);
   }
 
   onEcho({ text }) {
@@ -14,6 +14,6 @@ export default class EchoClient extends Client {
   }
 
   echo(text) {
-    this.send('echo', { text });
+    this.emit('echo', { text });
   }
 }
