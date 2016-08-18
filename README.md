@@ -5,6 +5,7 @@ Programmatically extensible lightweight WebSocket implementation in JavaScript.
 [![Version (npm)](https://img.shields.io/npm/v/wsx.svg)](https://npmjs.com/package/wsx)
 [![Build Status](https://img.shields.io/travis/kripod/wsx/master.svg)](https://travis-ci.org/kripod/wsx)
 [![Code Coverage](https://img.shields.io/codecov/c/github/kripod/wsx/master.svg)](https://codecov.io/gh/kripod/wsx)
+[![Dependencies](https://img.shields.io/david/kripod/wsx.svg)](https://david-dm.org/kripod/wsx)
 [![Gitter](https://img.shields.io/gitter/room/kripod/wsx.svg)](https://gitter.im/kripod/wsx)
 
 ## Introduction
