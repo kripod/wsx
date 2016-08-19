@@ -1,3 +1,5 @@
+import { DISALLOWED_MESSAGE_TYPES } from './config';
+
 /**
  * Represents a socket owned by a server or a client.
  * @class Socket
@@ -18,15 +20,21 @@ export default class SocketExtensionMap extends Map {
     super();
 
     /**
-     * Transmits a message through the socket.
-     * @name send
+     * Emits an event to the corresponding socket.
+     * @name emit
      * @memberof Socket
-     * @param {string} type Type of the message.
-     * @param {*} [payload] Payload of the message.
+     * @param {string} type Type of the event.
+     * @param {...*} [params] Parameters of the event.
      */
-    this.set('send', (socket, originalFn, parent) =>
-      (type, payload) =>
-        originalFn(parent.messageSerializer.serialize(type, payload))
+    this.set('emit', (socket, originalFn, parent) =>
+      (type, ...params) => {
+        if (DISALLOWED_MESSAGE_TYPES.indexOf(type) < 0) {
+          // TODO: Throw an exception
+          return;
+        }
+
+        socket.send(parent.messageSerializer.serialize(type, ...params));
+      }
     );
   }
 
