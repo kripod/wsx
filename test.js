@@ -3,54 +3,53 @@ import portfinder from 'portfinder';
 import Client from './src/client';
 import Server from './src/server';
 
-const DEFAULT_CLIENT_COUNT = 4;
+const CLIENT_COUNT = 4;
 
-function createServerWithClientsAsync(
-  clientCount = DEFAULT_CLIENT_COUNT,
-  serverOptions,
-  clientOptions
-) {
-  return new Promise((resolve) => {
-    // Find a free port for the server
-    portfinder.getPort((err, port) => {
-      resolve([
-        new Server(Object.assign({ port }, serverOptions)),
-        Array.from(
-          new Array(clientCount),
-          () => new Client(`ws://localhost:${port}`, clientOptions)
-        ),
-      ]);
-    });
+let port;
+let server;
+const clients = [];
+
+// Find a free port for the server
+test.before.cb((t) => {
+  portfinder.getPort((err, port2) => {
+    port = port2;
+    t.end();
   });
-}
-
-test.cb('connect', (t) => {
-  createServerWithClientsAsync()
-    .then(([server]) => {
-      t.is(server.sockets.size, 0);
-
-      let connectedClientCount = 0;
-      server.on('connection', () => {
-        t.is(server.sockets.size, ++connectedClientCount);
-
-        if (connectedClientCount === DEFAULT_CLIENT_COUNT) {
-          t.end();
-        }
-      });
-    });
 });
 
-test('plugins', async (t) => {
-  const [server, [client]] = await createServerWithClientsAsync(
-    1,
-    /* eslint-disable no-param-reassign */
-    { plugins: [(wsxServer) => { wsxServer.isPluginTestSuccessful = true; }] },
-    { plugins: [(wsxClient) => { wsxClient.isPluginTestSuccessful = true; }] },
-    /* eslint-enable no-param-reassign */
-  );
+/* eslint-disable no-param-reassign */
+test.serial.cb('connect', (t) => {
+  // Initialize the server
+  server = new Server({
+    port,
+    plugins: [(wsxServer) => { wsxServer.isPluginTestSuccessful = true; }],
+  });
+  t.is(server.sockets.size, 0);
 
+  let connectedClientCount = 0;
+  server.on('connection', () => {
+    t.is(server.sockets.size, ++connectedClientCount);
+
+    if (connectedClientCount === CLIENT_COUNT) {
+      t.end();
+    }
+  });
+
+  // Initialize clients
+  for (let i = CLIENT_COUNT; i > 0; --i) {
+    clients.push(new Client(`ws://localhost:${port}`, {
+      plugins: [(wsxClient) => { wsxClient.isPluginTestSuccessful = true; }],
+    }));
+  }
+});
+/* eslint-enable no-param-reassign */
+
+test.serial('plugins', (t) => {
   t.true(server.isPluginTestSuccessful);
-  t.true(client.isPluginTestSuccessful);
+
+  for (const client of clients) {
+    t.true(client.isPluginTestSuccessful);
+  }
 });
 
 test.serial.cb.skip('send/receive data', (t) => {
