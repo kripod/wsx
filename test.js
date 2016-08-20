@@ -3,164 +3,146 @@ import portfinder from 'portfinder';
 import Client from './src/client';
 import Server from './src/server';
 
-const CLIENT_COUNT = 4;
+const DEFAULT_CLIENT_COUNT = 4;
 
-let port;
-let server;
-const clients = [];
-
-// Find a free port for the server
-test.before.cb((t) => {
-  portfinder.getPort((err, port2) => {
-    port = port2;
-    t.end();
+function createServerWithClientsAsync(
+  clientCount = DEFAULT_CLIENT_COUNT,
+  serverOptions,
+  clientOptions
+) {
+  return new Promise((resolve) => {
+    // Find a free port for the server
+    portfinder.getPort((err, port) => {
+      resolve([
+        new Server(Object.assign({ port }, serverOptions)),
+        Array.from(
+          new Array(clientCount),
+          () => new Client(`ws://localhost:${port}`, clientOptions)
+        ),
+      ]);
+    });
   });
+}
+
+test.cb('connect/disconnect', (t) => {
+  createServerWithClientsAsync()
+    .then(([server, clients]) => {
+      t.is(server.sockets.size, 0);
+
+      let connectedClientCount = 0;
+
+      server
+        .on('connect', () => {
+          t.is(server.sockets.size, ++connectedClientCount);
+          if (connectedClientCount === DEFAULT_CLIENT_COUNT) {
+            // Disconnect clients
+            for (const client of clients) {
+              client.disconnect();
+            }
+          }
+        })
+        .on('disconnect', () => {
+          t.is(server.sockets.size, --connectedClientCount);
+          if (connectedClientCount === 0) {
+            t.end();
+          }
+        });
+    });
 });
 
-/* eslint-disable no-param-reassign */
-test.serial.cb('connect', (t) => {
-  // Initialize the server
-  server = new Server({
-    port,
-    plugins: [(wsxServer) => { wsxServer.isPluginTestSuccessful = true; }],
-  });
-  t.is(server.sockets.size, 0);
+test('plugins', async (t) => {
+  const [server, [client]] = await createServerWithClientsAsync(
+    1,
+    /* eslint-disable no-param-reassign */
+    { plugins: [(wsxServer) => { wsxServer.isPluginTestSuccessful = true; }] },
+    { plugins: [(wsxClient) => { wsxClient.isPluginTestSuccessful = true; }] },
+    /* eslint-enable no-param-reassign */
+  );
 
-  let connectedClientCount = 0;
-  server.on('connect', () => {
-    t.is(server.sockets.size, ++connectedClientCount);
-
-    if (connectedClientCount === CLIENT_COUNT) {
-      t.end();
-    }
-  });
-
-  // Initialize clients
-  for (let i = CLIENT_COUNT; i > 0; --i) {
-    clients.push(new Client(`ws://localhost:${port}`, {
-      plugins: [(wsxClient) => { wsxClient.isPluginTestSuccessful = true; }],
-    }));
-  }
-});
-/* eslint-enable no-param-reassign */
-
-test.serial('plugins', (t) => {
   t.true(server.isPluginTestSuccessful);
-
-  for (const client of clients) {
-    t.true(client.isPluginTestSuccessful);
-  }
+  t.true(client.isPluginTestSuccessful);
 });
 
-test.serial.cb('send/receive data', (t) => {
-  const expectedType = 'echo';
-  const expectedPayload = { text: 'Hello, World!' };
-  const eventsOrder = [];
+test.cb('send/receive data', (t) => {
+  createServerWithClientsAsync()
+    .then(([server, [client]]) => {
+      server.on('message:echo', (socket, payload) => {
+        t.is(payload, 'ping');
+        socket.send('echo', 'pong');
+      });
 
-  server.once(`message:${expectedType}`, (socket, payload) => {
-    t.deepEqual(payload, expectedPayload);
-    socket.send(expectedType, expectedPayload);
-    eventsOrder.push(1);
-  });
-
-  clients[0].once(`message:${expectedType}`, (payload) => {
-    t.deepEqual(payload, expectedPayload);
-    eventsOrder.push(2);
-
-    // Check whether the order of event execution was correct
-    t.deepEqual(eventsOrder, [1, 2]);
-    t.end();
-  });
-
-  clients[0].send(expectedType, expectedPayload);
-});
-
-test.serial.cb('broadcast data', (t) => {
-  const expectedType = 'position';
-  const expectedPayload = { x: 10, y: 20 };
-
-  server.once(`message:${expectedType}`, (socket, payload) => {
-    socket.broadcast(expectedType, payload);
-  });
-
-  clients[0].once(`message:${expectedType}`, () => t.fail());
-
-  let messagesReceived = 0;
-  for (let i = CLIENT_COUNT - 1; i > 0; --i) {
-    /* eslint-disable no-loop-func */
-    clients[i].once(`message:${expectedType}`, (payload) => {
-      /* eslint-enable no-loop-func */
-      t.deepEqual(payload, expectedPayload);
-      if (++messagesReceived === CLIENT_COUNT - 1) {
-        t.end();
-      }
+      client
+        .on('connect', () => client.send('echo', 'ping'))
+        .on('message:echo', (payload) => {
+          t.is(payload, 'pong');
+          t.end();
+        });
     });
-  }
-
-  clients[0].send(expectedType, expectedPayload);
 });
 
-test.serial.cb('socket groups', (t) => {
-  const groupIds = [
-    'dc847faf83626c8e2c2dd2ce3eda1d9418f3705e',
-    '5a149824a387790fcb8b3956a7d5e467692546fe',
-  ];
+test.cb('broadcast data', (t) => {
+  createServerWithClientsAsync()
+    .then(([server, clients]) => {
+      server.on('message:say', (socket, payload) => {
+        t.is(payload, 'hi');
+        socket.broadcast('say', payload);
+      });
 
-  let messagesReceived = 0;
-  server.on('message:join', (socket, { id }) => {
-    let socketGroup = server.getSocketGroup(id);
-    if (socketGroup.add(socket).size === 1) {
-      // Remove socket from the group
-      t.not(server.socketGroups[id], undefined);
-      t.true(socketGroup.delete(socket));
-      t.false(socketGroup.delete(socket));
-      t.is(server.socketGroups[id], undefined);
-
-      // Re-add socket to the group
-      server.getSocketGroup(id).add(socket);
-    }
-
-    if (++messagesReceived === 3) {
-      for (let i = 1; i >= 0; --i) {
-        socketGroup = server.getSocketGroup(groupIds[i]);
-        t.is(socketGroup.size, i + 1);
-
-        // Clear the group
-        socketGroup.send('clear');
-        t.not(server.socketGroups[groupIds[i]], undefined);
-        socketGroup.clear();
-        t.is(server.socketGroups[groupIds[i]], undefined);
-      }
-    }
-  });
-
-  clients[0].once('message:clear', t.end);
-
-  clients[0].send('join', { id: groupIds[0] });
-  clients[1].send('join', { id: groupIds[1] });
-  clients[2].send('join', { id: groupIds[1] });
-});
-
-test.serial.cb('disconnect', (t) => {
-  server.once('message:join', () => {
-    let connectedClientCount = CLIENT_COUNT;
-    server.on('disconnect', () => {
-      connectedClientCount -= 1;
-      t.is(server.sockets.size, connectedClientCount);
-
-      if (connectedClientCount === 0) {
-        // Ensure that there are no empty socket groups left
-        t.deepEqual(server.socketGroups, {});
-        t.end();
-      }
+      let messagesReceived = 0;
+      clients.forEach((client, i) => {
+        if (i > 0) {
+          client.on('message:say', (payload) => {
+            t.is(payload, 'hi');
+            if (++messagesReceived === DEFAULT_CLIENT_COUNT - 1) {
+              t.end();
+            }
+          });
+        } else {
+          client
+            .on('connect', () => client.send('say', 'hi'))
+            .on('message:say', () => t.fail());
+        }
+      });
     });
+});
 
-    // Disconnect clients
-    for (const client of clients) {
-      client.disconnect();
-    }
-  });
+test.cb('socket groups', (t) => {
+  // TODO: Ensure that there is no empty socket groups left when every socket of
+  // a group disconnects
+  createServerWithClientsAsync()
+    .then(([server, clients]) => {
+      let messagesReceived = 0;
+      server.on('message:join', (socket, groupId) => {
+        let socketGroup = server.getSocketGroup(groupId);
+        if (socketGroup.add(socket).size === 1) {
+          // Remove socket from the group
+          t.not(server.socketGroups[groupId], undefined);
+          t.true(socketGroup.delete(socket));
+          t.false(socketGroup.delete(socket));
+          t.is(server.socketGroups[groupId], undefined);
 
-  // Simulate that a client is the only member of a group
-  clients[0].send('join', { id: '42' });
+          // Re-add socket to the group
+          server.getSocketGroup(groupId).add(socket);
+        }
+
+        if (++messagesReceived === DEFAULT_CLIENT_COUNT - 1) {
+          for (let i = 1; i >= 0; --i) {
+            socketGroup = server.getSocketGroup(`group${i}`);
+            t.is(socketGroup.size, i + 1);
+
+            // Clear the group
+            socketGroup.send('clear');
+            t.not(server.socketGroups[`group${i}`], undefined);
+            socketGroup.clear();
+            t.is(server.socketGroups[`group${i}`], undefined);
+          }
+        }
+      });
+
+      clients[0].on('message:clear', () => t.end());
+
+      clients[0].on('connect', () => clients[0].send('join', 'group0'));
+      clients[1].on('connect', () => clients[1].send('join', 'group1'));
+      clients[2].on('connect', () => clients[2].send('join', 'group1'));
+    });
 });

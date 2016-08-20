@@ -113,6 +113,7 @@ export default class Client extends EventEmitter {
    * UTF-8 text (not characters).
    */
   disconnect(code, reason) {
+    this.base.onerror = () => {};
     this.base.close(code, reason);
   }
 }
