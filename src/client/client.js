@@ -32,7 +32,7 @@ export default class Client extends EventEmitter {
    */
 
   /**
-   * Error event, fired when an unexpected socket error occurs.
+   * Error event, fired when an unexpected error occurs.
    * @event error
    * @memberof Client
    */

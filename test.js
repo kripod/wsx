@@ -27,7 +27,7 @@ test.serial.cb('connect', (t) => {
   t.is(server.sockets.size, 0);
 
   let connectedClientCount = 0;
-  server.on('connection', () => {
+  server.on('connect', () => {
     t.is(server.sockets.size, ++connectedClientCount);
 
     if (connectedClientCount === CLIENT_COUNT) {
@@ -52,19 +52,18 @@ test.serial('plugins', (t) => {
   }
 });
 
-test.serial.cb.skip('send/receive data', (t) => {
+test.serial.cb('send/receive data', (t) => {
   const expectedType = 'echo';
   const expectedPayload = { text: 'Hello, World!' };
   const eventsOrder = [];
 
-  const serverSocket = server.sockets.get(0);
-  serverSocket.once(expectedType, (payload) => {
+  server.once(`message:${expectedType}`, (socket, payload) => {
     t.deepEqual(payload, expectedPayload);
-    serverSocket.send(expectedType, expectedPayload);
+    socket.send(expectedType, expectedPayload);
     eventsOrder.push(1);
   });
 
-  clients[0].once(expectedType, (payload) => {
+  clients[0].once(`message:${expectedType}`, (payload) => {
     t.deepEqual(payload, expectedPayload);
     eventsOrder.push(2);
 
@@ -76,21 +75,20 @@ test.serial.cb.skip('send/receive data', (t) => {
   clients[0].send(expectedType, expectedPayload);
 });
 
-test.serial.cb.skip('broadcast data', (t) => {
+test.serial.cb('broadcast data', (t) => {
   const expectedType = 'position';
   const expectedPayload = { x: 10, y: 20 };
 
-  const serverSocket = server.sockets.get(0);
-  serverSocket.once(expectedType, (payload) => {
-    serverSocket.broadcast(expectedType, payload);
+  server.once(`message:${expectedType}`, (socket, payload) => {
+    socket.broadcast(expectedType, payload);
   });
 
-  clients[0].once(expectedType, () => t.fail());
+  clients[0].once(`message:${expectedType}`, () => t.fail());
 
   let messagesReceived = 0;
   for (let i = CLIENT_COUNT - 1; i > 0; --i) {
     /* eslint-disable no-loop-func */
-    clients[i].once(expectedType, (payload) => {
+    clients[i].once(`message:${expectedType}`, (payload) => {
       /* eslint-enable no-loop-func */
       t.deepEqual(payload, expectedPayload);
       if (++messagesReceived === CLIENT_COUNT - 1) {
@@ -102,7 +100,7 @@ test.serial.cb.skip('broadcast data', (t) => {
   clients[0].send(expectedType, expectedPayload);
 });
 
-test.serial.cb.skip('socket groups', (t) => {
+test.serial.cb('socket groups', (t) => {
   const groupIds = [
     'dc847faf83626c8e2c2dd2ce3eda1d9418f3705e',
     '5a149824a387790fcb8b3956a7d5e467692546fe',
@@ -143,7 +141,7 @@ test.serial.cb.skip('socket groups', (t) => {
   clients[2].send('join', { id: groupIds[1] });
 });
 
-test.serial.cb.skip('disconnect', (t) => {
+test.serial.cb('disconnect', (t) => {
   server.once('message:join', () => {
     let connectedClientCount = CLIENT_COUNT;
     server.on('disconnect', () => {

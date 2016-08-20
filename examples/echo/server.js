@@ -4,14 +4,12 @@ export default class EchoServer extends Server {
   constructor(...params) {
     super(...params);
 
-    this.on('connect', (socket) => {
-      socket.on('echo', (...params2) => this.onEcho(socket, ...params2));
-    });
+    this.on('message:echo', this.onEcho);
   }
 
   onEcho(socket, { text }) {
     if (typeof text !== 'string') return;
 
-    socket.emit('echo', { text });
+    socket.send('echo', { text });
   }
 }
