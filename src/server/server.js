@@ -68,17 +68,21 @@ export default class Server extends EventEmitter {
     super();
 
     /**
-     * Emits an event to everyone else except for the socket that initiates it.
+     * Transmits a message to everyone else except for the socket that starts
+     * it.
      * @name broadcast
      * @memberof ServerSideSocket
-     * @param {string} type Type of the event.
-     * @param {...*} [params] Parameters of the event.
+     * @param {string} type Type of the message.
+     * @param {*} [payload] Payload of the message.
+     * @param {ServerSideSocket[]} [sockets] Sockets to broadcast the message
+     * between.
      */
     this.socketExtensions.set('broadcast', (socket) =>
-      (type, ...params) => {
+      (type, payload, sockets = this.sockets) => {
         this.bulkSend(
-          [...this.sockets].filter((socket2) => socket2 !== socket),
-          this.messageSerializer.serialize(type, ...params)
+          [...sockets].filter((socket2) => socket2 !== socket),
+          type,
+          payload
         );
       }
     );
@@ -101,8 +105,7 @@ export default class Server extends EventEmitter {
       });
 
       socket.on('message', (data) => {
-        const deserializedData = this.messageSerializer.deserialize(data);
-        const { data: [type, ...params] } = deserializedData;
+        const { type, payload } = this.messageSerializer.deserialize(data);
 
         // Validate message type
         if (type && type.constructor === String) {
@@ -111,11 +114,7 @@ export default class Server extends EventEmitter {
             return;
           }
 
-          // TODO: Add support for channels
-          socket.emit(type, ...params);
-        } else {
-          // Emit typeless message event
-          socket.emit('message', deserializedData);
+          socket.emit(`${type}`, payload);
         }
       });
 
@@ -148,16 +147,20 @@ export default class Server extends EventEmitter {
   }
 
   /**
-   * Transmits a raw message to the given sockets.
+   * Transmits a message to the given sockets.
    * @param {ServerSideSocket[]} sockets Sockets to send the message to.
-   * @param {*} data Raw message data.
-   * @private
+   * @param {string} type Type of the message.
+   * @param {*} [payload] Payload of the message.
    */
-  bulkSend(sockets, data) {
-    const preparedMessage = this.base.prepareMessage(data);
+  bulkSend(sockets, type, payload) {
+    const preparedMessage = this.base.prepareMessage(
+      this.messageSerializer.serialize(type, payload)
+    );
+
     for (const socket of sockets) {
       socket.sendPrepared(preparedMessage);
     }
+
     this.base.finalizeMessage(preparedMessage);
   }
 }

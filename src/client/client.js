@@ -1,6 +1,5 @@
 import EventEmitter from 'events';
 import { w3cwebsocket as WebSocketClient } from 'websocket';
-import { DISALLOWED_MESSAGE_TYPES } from '../config';
 import MessageSerializer from '../message-serializer';
 import SocketExtensionMap from '../socket-extension-map';
 
@@ -23,6 +22,13 @@ export default class Client extends EventEmitter {
    * @param {string} reason Reason why the server closed the connection.
    * @param {boolean} wasClean Indicates whether or not the connection was
    * cleanly closed.
+   */
+
+  /**
+   * Message event, fired when a typeful message is received.
+   * @event message:[type]
+   * @memberof Client
+   * @param {*} payload Payload of the message.
    */
 
   /**
@@ -70,21 +76,11 @@ export default class Client extends EventEmitter {
       this.emit('disconnect', code, reason, wasClean);
 
     this.base.onmessage = ({ data }) => {
-      const deserializedData = this.messageSerializer.deserialize(data);
-      const { data: [type, ...params] } = deserializedData;
+      const { type, payload } = this.messageSerializer.deserialize(data);
 
       // Validate message type
       if (type && type.constructor === String) {
-        if (DISALLOWED_MESSAGE_TYPES.indexOf(type) < 0) {
-          // TODO: Throw an exception
-          return;
-        }
-
-        // TODO: Add support for channels
-        this.emit(type, ...params);
-      } else {
-        // Emit typeless message event
-        this.emit('message', deserializedData);
+        this.emit(`message:${type}`, payload);
       }
     };
 
@@ -100,20 +96,12 @@ export default class Client extends EventEmitter {
   }
 
   /**
-   * Transmits a raw message to the server.
-   * @param {*} data Raw message data.
+   * Transmits a message to the server.
+   * @param {string} type Type of the message.
+   * @param {*} [payload] Payload of the message.
    */
-  send(data) {
-    this.base.send(data);
-  }
-
-  /**
-   * Emits an event to the server.
-   * @param {string} type Type of the event.
-   * @param {...*} [params] Parameters of the event.
-   */
-  emit(type, ...params) {
-    this.base.emit(type, ...params);
+  send(type, payload) {
+    this.base.send(type, payload);
   }
 
   /**

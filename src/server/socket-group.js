@@ -52,22 +52,11 @@ export default class SocketGroup extends Set {
   }
 
   /**
-   * Transmits a raw message to every socket in the group.
-   * @param {*} data Raw message data.
+   * Transmits a message to every socket in the group.
+   * @param {string} type Type of the message.
+   * @param {*} [payload] Payload of the message.
    */
-  send(data) {
-    this.parent.bulkSend(this, data);
-  }
-
-  /**
-   * Emits an event to every socket in the group.
-   * @param {string} type Type of the event.
-   * @param {...*} [params] Parameters of the event.
-   */
-  emit(type, ...params) {
-    this.parent.bulkSend(
-      this,
-      this.parent.messageSerializer.serialize(type, ...params)
-    );
+  send(type, payload) {
+    this.parent.bulkSend(this, type, payload);
   }
 }
