@@ -34,6 +34,14 @@ export default class Server extends EventEmitter {
    */
 
   /**
+   * Raw message event, fired when a typeless message is received.
+   * @event rawMessage
+   * @memberof Server
+   * @param {ServerSideSocket} socket Socket of the message's sender.
+   * @param {*} data Data of the message.
+   */
+
+  /**
    * Error event, fired when an unexpected error occurs.
    * @event error
    * @memberof Server
@@ -47,6 +55,12 @@ export default class Server extends EventEmitter {
    * @private
    */
   base;
+
+  /**
+   * Channel used for message transmission.
+   * @type {string}
+   */
+  channel = '';
 
   /**
    * Store for every connected socket.
@@ -124,11 +138,20 @@ export default class Server extends EventEmitter {
       });
 
       socket.on('message', (data) => {
-        const { type, payload } = this.messageSerializer.deserialize(data);
+        const deserializedData = this.messageSerializer.deserialize(data);
+        const [channel, type, payload] = deserializedData;
 
-        // Validate message type
-        if (type && type.constructor === String) {
+        // Check whether the message is not raw
+        if (
+          channel !== null &&
+          channel.constructor === String &&
+          type &&
+          type.constructor === String
+        ) {
+          // TODO: Forward message to the given channel
           this.emit(`message:${type}`, socket, payload);
+        } else {
+          this.emit('rawMessage', socket, deserializedData);
         }
       });
 
@@ -170,7 +193,7 @@ export default class Server extends EventEmitter {
    */
   bulkSend(sockets, type, payload) {
     const preparedMessage = this.base.prepareMessage(
-      this.messageSerializer.serialize(type, payload)
+      this.messageSerializer.serialize(this.channel, type, payload)
     );
 
     for (const socket of sockets) {

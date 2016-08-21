@@ -32,6 +32,13 @@ export default class Client extends EventEmitter {
    */
 
   /**
+   * Raw message event, fired when a typeless message is received.
+   * @event rawMessage
+   * @memberof Client
+   * @param {*} data Data of the message.
+   */
+
+  /**
    * Error event, fired when an unexpected error occurs.
    * @event error
    * @memberof Client
@@ -43,6 +50,12 @@ export default class Client extends EventEmitter {
    * @private
    */
   base;
+
+  /**
+   * Channel used for message transmission.
+   * @type {string}
+   */
+  channel = '';
 
   /**
    * Socket extensions to be applied on every managed socket.
@@ -76,11 +89,20 @@ export default class Client extends EventEmitter {
       this.emit('disconnect', code, reason, wasClean);
 
     this.base.onmessage = ({ data }) => {
-      const { type, payload } = this.messageSerializer.deserialize(data);
+      const deserializedData = this.messageSerializer.deserialize(data);
+      const [channel, type, payload] = deserializedData;
 
-      // Validate message type
-      if (type && type.constructor === String) {
+      // Check whether the message is not raw
+      if (
+        channel !== null &&
+        channel.constructor === String &&
+        type &&
+        type.constructor === String
+      ) {
+        // TODO: Forward message to the given channel
         this.emit(`message:${type}`, payload);
+      } else {
+        this.emit('rawMessage', deserializedData);
       }
     };
 
@@ -113,6 +135,7 @@ export default class Client extends EventEmitter {
    * UTF-8 text (not characters).
    */
   disconnect(code, reason) {
+    // Detach error handler to avoid emitting errors unintentionally
     this.base.onerror = () => {};
     this.base.close(code, reason);
   }

@@ -26,7 +26,9 @@ export default class SocketExtensionMap extends Map {
      */
     this.set('send', (socket, originalFn, parent) =>
       (type, payload) =>
-        originalFn(parent.messageSerializer.serialize(type, payload))
+        originalFn(
+          parent.messageSerializer.serialize(parent.channel, type, payload)
+        )
     );
   }
 

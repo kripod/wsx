@@ -5,22 +5,20 @@
 export default class MessageSerializer {
   /**
    * Serializes a message to be sent over a WebSocket connection.
+   * @param {string} channel Channel of the message.
    * @param {string} type Type of the message.
    * @param {*} [payload] Payload of the message.
    * @returns {string}
    */
-  static serialize(type, payload) {
+  static serialize(channel, type, payload) {
     // Transform messages to JSON strings
-    return JSON.stringify({
-      type,
-      ...(payload && { payload }),
-    });
+    return JSON.stringify([channel, type, ...(payload ? [payload] : [])]);
   }
 
   /**
    * Deserializes a message received over a WebSocket connection.
-   * @param {string} data Serialized message data.
-   * @returns {Object}
+   * @param {*} data Serialized message data.
+   * @returns {*}
    */
   static deserialize(data) {
     // Parse JSON-serialized strings
