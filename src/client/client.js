@@ -12,12 +12,14 @@ export default class Client extends EventEmitter {
    * Connection event, fired when the socket has connected successfully.
    * @event connect
    * @memberof Client
+   * @instance
    */
 
   /**
    * Disconnection event, fired when the socket disconnects.
    * @event disconnect
    * @memberof Client
+   * @instance
    * @param {number} code Close status code sent by the server.
    * @param {string} reason Reason why the server closed the connection.
    * @param {boolean} wasClean Indicates whether or not the connection was
@@ -28,6 +30,7 @@ export default class Client extends EventEmitter {
    * Message event, fired when a typeful message is received.
    * @event message:[type]
    * @memberof Client
+   * @instance
    * @param {*} payload Payload of the message.
    */
 
@@ -35,6 +38,7 @@ export default class Client extends EventEmitter {
    * Raw message event, fired when a typeless message is received.
    * @event rawMessage
    * @memberof Client
+   * @instance
    * @param {*} data Data of the message.
    */
 
@@ -42,6 +46,7 @@ export default class Client extends EventEmitter {
    * Error event, fired when an unexpected error occurs.
    * @event error
    * @memberof Client
+   * @instance
    */
 
   /**
@@ -84,6 +89,7 @@ export default class Client extends EventEmitter {
       this
     );
 
+    this.base.onerror = () => this.emit('error');
     this.base.onopen = () => this.emit('connect');
     this.base.onclose = ({ code, reason, wasClean }) =>
       this.emit('disconnect', code, reason, wasClean);
@@ -105,8 +111,6 @@ export default class Client extends EventEmitter {
         this.emit('rawMessage', deserializedData);
       }
     };
-
-    this.base.onerror = () => this.emit('error');
 
     // Parse custom options
     const { plugins = [] } = options;

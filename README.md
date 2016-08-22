@@ -17,7 +17,7 @@ over the network without sacrificing stability and scalability.
 ## Getting started
 
 Please refer to the
-[API reference](https://github.com/kripod/wsx/blob/master/API.md) and the
+[API reference](https://kripod.github.io/wsx) and the
 [directory of examples](https://github.com/kripod/wsx/tree/master/examples) to
 learn more about leveraging the possibilities within the library.
 

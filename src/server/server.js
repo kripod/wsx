@@ -13,6 +13,7 @@ export default class Server extends EventEmitter {
    * Connection event, fired when a socket has connected successfully.
    * @event connect
    * @memberof Server
+   * @instance
    * @param {ServerSideSocket} socket Connected socket instance.
    */
 
@@ -20,6 +21,7 @@ export default class Server extends EventEmitter {
    * Disconnection event, fired when a socket disconnects.
    * @event disconnect
    * @memberof Server
+   * @instance
    * @param {ServerSideSocket} socket Disconnected socket instance.
    * @param {number} code Close status code sent by the socket.
    * @param {string} reason Reason why the socket closed the connection.
@@ -29,6 +31,7 @@ export default class Server extends EventEmitter {
    * Message event, fired when a typeful message is received.
    * @event message:[type]
    * @memberof Server
+   * @instance
    * @param {ServerSideSocket} socket Socket of the message's sender.
    * @param {*} payload Payload of the message.
    */
@@ -37,6 +40,7 @@ export default class Server extends EventEmitter {
    * Raw message event, fired when a typeless message is received.
    * @event rawMessage
    * @memberof Server
+   * @instance
    * @param {ServerSideSocket} socket Socket of the message's sender.
    * @param {*} data Data of the message.
    */
@@ -45,6 +49,7 @@ export default class Server extends EventEmitter {
    * Error event, fired when an unexpected error occurs.
    * @event error
    * @memberof Server
+   * @instance
    * @param {Object} error Error object.
    * @param {ServerSideSocket} [socket] Socket which caused the error.
    */
@@ -118,49 +123,46 @@ export default class Server extends EventEmitter {
       }
     );
 
-    this.base = new WebSocketServer(options, successCallback);
+    this.base = new WebSocketServer(options, successCallback)
+      .on('error', (error) => this.emit('error', error))
+      .on('connection', (socket) => {
+        // Extend the functionality of sockets
+        this.socketExtensions.apply(socket, this);
 
-    this.base.on('connection', (socket) => {
-      // Extend the functionality of sockets
-      this.socketExtensions.apply(socket, this);
+        // Add the connected socket to the main group of sockets
+        this.sockets.add(socket);
 
-      // Add the connected socket to the main group of sockets
-      this.sockets.add(socket);
+        socket
+          .on('error', (error) => this.emit('error', error, socket))
+          .on('close', (code, reason) => {
+            // Remove the disconnected socket from every group
+            this.sockets.delete(socket);
+            for (const socketGroup of Object.values(this.socketGroups)) {
+              socketGroup.delete(socket);
+            }
 
-      socket.on('close', (code, reason) => {
-        // Remove the disconnected socket from every group
-        this.sockets.delete(socket);
-        for (const socketGroup of Object.values(this.socketGroups)) {
-          socketGroup.delete(socket);
-        }
+            this.emit('disconnect', socket, code, reason);
+          })
+          .on('message', (data) => {
+            const deserializedData = this.messageSerializer.deserialize(data);
+            const [channel, type, payload] = deserializedData;
 
-        this.emit('disconnect', socket, code, reason);
+            // Check whether the message is not raw
+            if (
+              channel !== null &&
+              channel.constructor === String &&
+              type &&
+              type.constructor === String
+            ) {
+              // TODO: Forward message to the given channel
+              this.emit(`message:${type}`, socket, payload);
+            } else {
+              this.emit('rawMessage', socket, deserializedData);
+            }
+          });
+
+        this.emit('connect', socket);
       });
-
-      socket.on('message', (data) => {
-        const deserializedData = this.messageSerializer.deserialize(data);
-        const [channel, type, payload] = deserializedData;
-
-        // Check whether the message is not raw
-        if (
-          channel !== null &&
-          channel.constructor === String &&
-          type &&
-          type.constructor === String
-        ) {
-          // TODO: Forward message to the given channel
-          this.emit(`message:${type}`, socket, payload);
-        } else {
-          this.emit('rawMessage', socket, deserializedData);
-        }
-      });
-
-      socket.on('error', (error) => this.emit('error', error, socket));
-
-      this.emit('connect', socket);
-    });
-
-    this.base.on('error', (error) => this.emit('error', error));
 
     // Parse custom options
     const { plugins = [] } = options;

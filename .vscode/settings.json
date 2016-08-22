@@ -5,6 +5,7 @@
     "**/*.lcov": true,
     "**/.nyc_output": true,
     "**/coverage": true,
+    "**/docs": true,
     "**/lib": true,
     "**/node_modules": true
   },
